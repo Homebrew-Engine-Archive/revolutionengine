@@ -7,6 +7,10 @@
 #ifndef REV_OBJECTS_H
 #define REV_OBJECTS_H
 
+#include <vector>
+
+using namespace std;
+
 class OBJECT:public NODE
 {
 public:
@@ -15,6 +19,7 @@ public:
 	MATERIAL * material;
 	GXColor clr;
 private:
+	vector<MATERIAL*>	m_materials;
 	GXColor shadowClr;
 friend class ROOT;
 friend void render(NODE * node, Vector camPos);
