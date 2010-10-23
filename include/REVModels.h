@@ -10,23 +10,25 @@
 class UVSET
 {
 public:
-	u16 nUVs;
 	f32 * uvs;
 	u16 * uvList;
+	u16 nUVs;
 };
 
 class SMESH//Static mesh, no animations
 {
 public:
-	u16 nVertices;
-	f32 * vertices;
-	u16 * vList;
-	u16 nNormals;
-	f32 * normals;
-	u16 * nList;
-	UVSET * uvSets;
-	u16 nTris;
-	u16 nQuads;
+	f32		*	vertices;
+	f32		*	normals;
+	UVSET	*	uvSets;
+	
+	u16		*	vList;
+	u16		*	nList;
+
+	u16			nVertices;
+	u16			nNormals;
+	u16			nTris;
+	u16			nQuads;
 };
 
 class MODEL
@@ -52,16 +54,16 @@ class SMODEL:public MODEL
 public:
 	SMODEL(const char * fileName = NULL, u8 format = FF_RMS);
 	~SMODEL();
-	void scale(f32 factor);
-	void scale(Vector factor);
-	f32 getRadius();
-	Vector getCenter();
+	void	scale			(f32 factor);
+	void	scale			(Vector factor);
+	f32		getRadius		();
+	Vector	getCenter		();
 private:
 	SMESH * meshes;
-	void render(Mtx absMtx, Vector camPos, u8 clrChannels = 0, u8 texChannels = 0, f32 specularity = 1.0f);
-	void specularLightsClr(Mtx absMtx, f32 specularity, Vector camPos, SMESH * mesh, u16 vIdx, u16 nIdx);
-	void shadowRender();
-friend void render(NODE * node);
+	void	render			(Mtx absMtx, Vector camPos, u8 clrChannels = 0, u8 texChannels = 0, f32 specularity = 1.0f);
+	void	specularLightsClr(Mtx absMtx, f32 specularity, Vector camPos, SMESH * mesh, u16 vIdx, u16 nIdx);
+	void	shadowRender	();
+friend void render			(NODE * node);
 friend class ROOT;
 };
 

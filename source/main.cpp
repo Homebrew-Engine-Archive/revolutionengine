@@ -12,13 +12,13 @@ int main()
 	REV_init();//One function inits everything (WPAD and PAD included)
 	SMODEL * floorMd = new SMODEL("RevExamples/models/plane.rms");
 	floorMd->scale(100000);
-	SMODEL * ballMd = new SMODEL("RevExamples/models/sphere.rms");
-	SMODEL * pointMd = new SMODEL("RevExamples/models/sphere.rms");
+	SMODEL * ballMd = new SMODEL("RevExamples/models/cube.rms");
+	SMODEL * pointMd = new SMODEL("RevExamples/models/cube.rms");
 	
 	ballMd->scale(50);
 	//Objects
 	OBJECT * floor = new OBJECT(floorMd);
-	floor->clr = SC_LBLUE;
+	floor->m_clr = SC_LBLUE;
 	OBJECT * ball01 = new OBJECT(ballMd, vector3(0, 0, 50));
 	OBJECT * ball02 = new OBJECT(ballMd, vector3(150, 0, 50));
 	OBJECT * ball03 = new OBJECT(pointMd, vector3(-150, 0, 50));
@@ -51,7 +51,7 @@ int main()
 		//Before every frame
 		REV_preProcess();
 		//If someone pressed home, exit
-		if(WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME)
+		/*if(WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME)
 		{
 			REV_exit();
 		}
@@ -78,8 +78,8 @@ int main()
 		if(keyState[KEY_D]) sx-=100;
 		ball01->setSpeed(vector3(sx,sy,sz),nullVector);
 		if((ball01->collide(floor) >= 0)||(ball01->collide(ball02) >= 0)||(ball01->collide(ball03) >= 0))
-			ball01->clr = SC_RED;
-		else ball01->clr = SC_WHITE;
+			ball01->m_clr = SC_RED;
+		else ball01->m_clr = SC_WHITE;*/
 		//After every frame
 		REV_process(NULL);//
 	}

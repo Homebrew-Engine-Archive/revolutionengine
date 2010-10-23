@@ -8,6 +8,8 @@
 
 //Structures
 typedef struct ftgxCharData_ {
+	u32 * glyphDataTexture;	/**< Glyph texture bitmap data buffer. */
+
 	u16 glyphAdvanceX;	/**< Character glyph X coordinate advance in pixels. */
 	u16 glyphIndex;	/**< Charachter glyph index in the font face. */
 
@@ -17,12 +19,10 @@ typedef struct ftgxCharData_ {
 	u16 renderOffsetY;	/**< Texture Y axis bearing offset. */
 	u16 renderOffsetMax;	/**< Texture Y axis bearing maximum value. */
 	u16 renderOffsetMin;	/**< Texture Y axis bearing minimum value. */
-
-	u32 * glyphDataTexture;	/**< Glyph texture bitmap data buffer. */
 	
 	//Rev Add ons
-	struct ftgxCharData_ * next;
 	u8 key;
+	struct ftgxCharData_ * next;
 } ftgxCharData;
 
 //Public functions

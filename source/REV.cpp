@@ -129,22 +129,20 @@ void ROOT::shadowScene(void)
 
 void clasify3D(NODE * node)
 {
+	//Clasify childs
 	NODE * aux = node->child;
 	while(aux)
 	{
 		clasify3D(aux);
 		aux = aux->next;
 	}
+	//Classify this node
 	if(node->type == NT_OBJECT)
 	{
 		TRACKER * auxT = (TRACKER*)malloc(sizeof(TRACKER));
 		auxT->next = NULL;
 		auxT->target = (OBJECT*)node;
-		u8 tf = 0;//transparency flag
-		if(auxT->target->clr.a != 255)
-			tf = 1;
-		else if(auxT->target->material) tf = 1;
-		if(tf)
+		if(auxT->target->usesAlpha())
 		{
 			auxT->next = transQueue;
 			transQueue = auxT;
@@ -391,16 +389,16 @@ void render(NODE * node, Vector camPos)
 					
 					auxL = auxL->nextL;
 				}
-				if(obj->material)
+				if(!obj->m_vMaterials.empty())
 				{
-					obj->material->setTev(1, &clrChannels, &texChannels, endM);
+					obj->getMaterial()->setTev(1, &clrChannels, &texChannels, endM);
 					GX_SetTevKColor(GX_KCOLOR0, obj->shadowClr);//Set id for shadows
-					obj->model->render(modelM, camPos, clrChannels, texChannels, obj->material->specularity);
+					obj->model->render(modelM, camPos, clrChannels, texChannels, obj->getMaterial()->specularity);
 				}
 				else
 				{
 					GX_SetChanCtrl(GX_COLOR0A0,GX_ENABLE, GX_SRC_REG, GX_SRC_REG, endM, GX_DF_CLAMP, GX_AF_SPOT);
-					GX_SetChanMatColor(GX_COLOR0A0, obj->clr);
+					GX_SetChanMatColor(GX_COLOR0A0, obj->m_clr);
 					GX_SetChanAmbColor(GX_COLOR0A0, rgba(100,100,100,0));
 					GX_SetNumChans(1);
 					GX_SetNumTevStages(1);

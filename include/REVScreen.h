@@ -62,9 +62,9 @@ class TEXT:public N2D
 public:
 	TEXT(u8 size, Vector pos, char * content, GXColor clr = SC_WHITE, u8 flags = F_Visible);
 	TEXT(u8 size, Vector pos, u8 length = TEXT_DEFAULT_LENGTH, GXColor clr = SC_WHITE, u8 flags = F_Visible);
-	u8 size;
 	GXColor clr;
 	char * text;
+	u8 size;
 private:
 	void render();
 friend void render2D();
@@ -79,8 +79,8 @@ typedef struct n2dTracker
 typedef struct ir_pointer
 {
 	f32 x, y ,angle;
-	u8 mode;
 	N2D * nexus;
+	u8 mode;
 }IRPOINTER;
 
 void order2D();

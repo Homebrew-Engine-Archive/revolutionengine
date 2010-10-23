@@ -39,19 +39,19 @@ public:
 	void setMass		(f32 mass);
 	void setSpeed		(Vector linear, Vector angular = nullVector);//Update to reference coordinates
 	Vector getSpeed		(u8 reference = RT_ABS)					{	return speed;		}
-	//Public variables
-	u8 flags;
-	u8 mode;
 	//Other
 	u8 getType			()										{	return type;		}
 	void * custom;
 protected:
-	u8 type;
 	void render();
 	//Physics
 	f32 mass;
 	Mtx inertia;
 	Vector speed, aSpeed;
+	u8 type;
+public:
+	u8 flags;
+	u8 mode;
 private:
 	NODE * parent;
 	NODE * next;
@@ -90,10 +90,6 @@ public:
 	void absMtx			(Mtx m);
 	//Other
 	u8 getType			()										{	return type;	}
-	u8 flags;
-	void * custom;
-protected:
-	u8 type;
 private:
 	N2D * parent;
 	N2D * next;
@@ -101,6 +97,11 @@ private:
 	Mtx base;
 	f32 angle;
 	void srMtx			(Mtx m);
+public:
+	void * custom;
+	u8 flags;
+protected:
+	u8 type;
 friend void render2D	();
 friend void parse2D		(N2D * node);
 };
