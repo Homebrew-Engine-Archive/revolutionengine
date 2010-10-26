@@ -18,13 +18,13 @@ public:
 	OBJECT						(MODEL * model, MATERIAL * material, Vector pos = nullVector, u8 flags = F_Visible);
 	
 	bool		usesAlpha		();//To decide how to render this object
-	void		setMaterial		(MATERIAL * material, u8 slot = 0);//No more than 255 material slots allowed
-	MATERIAL *	getMaterial		(u8 slot = 0);
+	void		setMaterial		(IMaterial * material, u8 slot = 0);//No more than 255 material slots allowed
+	IMaterial *	getMaterial		(u8 slot = 0);
 
 	MODEL	*	model;
 	GXColor		m_clr;
 private:
-	vector<MATERIAL*>	m_vMaterials;
+	vector<IMaterial*>	m_vMaterials;
 	GXColor shadowClr;
 friend class ROOT;
 friend void render(NODE * node, Vector camPos);

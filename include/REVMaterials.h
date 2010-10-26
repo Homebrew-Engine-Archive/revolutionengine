@@ -19,6 +19,53 @@
 #define TILE_RGBA8     6 // for RGBA8
 #define TILE_SRGBA8    7 // for RGBA8 with R and B swapped
 
+//New implementation
+class TTevInfo
+{
+public:
+	TTevInfo();
+	void	lock		(u8 registries);
+	void	unlock		(u8 registries);
+	u8		getFreeReg	();//Returns the first unused registry, GX_TEVPREV is the last one
+	u8 tevStage;
+	u8 texMap;
+	u8 texCoords;
+	u8 outReg;
+private:
+	u8 m_lockedRegs;
+};
+
+class IMaterial
+{
+public:
+	virtual bool	usesAlpha	()=0;//This material uses alpha?
+	virtual void	setTev		(TTevInfo& info)=0;//Adjust texture enviroment hardware for render
+};
+
+class TTexture : public IMaterial
+{
+public:
+	TTexture					(const char * filename,const bool alpha = true);
+	~TTexture					();
+	virtual bool	usesAlpha	()								{ return m_alpha; }
+protected:
+	virtual void	setTev		(TTevInfo& info);
+	GXTexObj	*	m_pGXTexture;
+private:
+	bool	m_alpha;
+};
+
+class TDiffuseMaterial : public IMaterial
+{
+public:
+	TDiffuseMaterial			( IMaterial * baseMaterial );
+	virtual bool	usesAlpha	()								{ return m_pBaseMaterial?m_pBaseMaterial->usesAlpha():false; }
+	IMaterial	*	m_pBaseMaterial;
+protected:
+	virtual void	setTev		(TTevInfo& info);
+};
+
+//Old implementation
 class MATERIAL
 {
 public:

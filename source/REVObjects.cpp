@@ -18,6 +18,7 @@ OBJECT::OBJECT(MODEL * _model, Vector _pos, u8 _flags):NODE(_flags)
 	m_clr = DEFAULT_OBJECT_COLOR;
 	type = NT_OBJECT;
 	this->model = _model;
+	m_vMaterials.resize(1);
 }
 
 //--------------------------------------------------------------
@@ -31,13 +32,13 @@ bool OBJECT::usesAlpha()
 }
 
 //--------------------------------------------------------------
-void OBJECT::setMaterial(MATERIAL *_material, u8 _slot)
+void OBJECT::setMaterial(IMaterial *_material, u8 _slot)
 {
 	m_vMaterials[_slot] = _material;
 }
 
 //--------------------------------------------------------------
-MATERIAL * OBJECT::getMaterial(u8 _slot)
+IMaterial * OBJECT::getMaterial(u8 _slot)
 {
 	if(m_vMaterials.capacity() <= _slot) return NULL;
 	return m_vMaterials[_slot];

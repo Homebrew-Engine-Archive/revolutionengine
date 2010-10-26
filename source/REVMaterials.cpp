@@ -6,45 +6,100 @@
 
 #include "REV.h"
 
-MATERIAL::MATERIAL()
+//------------------------------------------------------------
+TTevInfo::TTevInfo()
 {
-	flags = 0;
+	tevStage	= GX_TEVSTAGE0;
+	texMap		= GX_TEXMAP0;
+	texCoords	= GX_TEXCOORD0;
+	outReg		= GX_TEVPREV;
+	m_lockedRegs	= 0;//No locked registries
+}
+//------------------------------------------------------------
+void TTevInfo::lock(u8 _registries)
+{
+	//There should be debug code here to detect when yo try to lock an alredy locked registry
+	m_lockedRegs |= (_registries << 1);
 }
 
-BMATERIAL::BMATERIAL(TEXTURE * tex)
+//------------------------------------------------------------
+void TTevInfo::unlock(u8 _registries)
 {
-	map = tex;
+	m_lockedRegs &= ~(_registries << 1);
 }
 
-void BMATERIAL::setTev(u8 nUVs, u8 * clrChannels, u8 * texChannels, u32 lightMask)
+//------------------------------------------------------------
+u8 TTevInfo::getFreeReg()
 {
-	texRenderData data = {
-	GX_TEXMAP0,//Available texture map
-	GX_TEXMTX0,//Available texture matrix
-	GX_TG_TEX0,//Source coordinates
-	GX_TEXCOORD0};//Destiny coordinates
-	//Diffuse channel
-	GX_SetChanCtrl(GX_COLOR0,GX_ENABLE, GX_SRC_REG, GX_SRC_REG, lightMask, GX_DF_CLAMP, GX_AF_SPOT);
-	GX_SetChanCtrl(GX_ALPHA0,GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHTNULL, GX_DF_NONE, GX_AF_NONE);
-	GX_SetChanMatColor(GX_COLOR0A0, SC_WHITE);
-	GX_SetChanAmbColor(GX_COLOR0, rgba(60,60,60,255));
-	//Vertex descriptors
-	*clrChannels = CC_DIFF;
-	GX_SetNumChans(1);
-	GX_SetNumTexGens(1);
-	u8 currTev = GX_TEVSTAGE0;
-	//TEVSTAGE 0
-	map->setTevStage(&data);
-	GX_SetTevColorIn(currTev, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
-	GX_SetTevAlphaIn(currTev, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
-	GX_SetTevOrder(currTev, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-	GX_SetTevColorOp(currTev, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
-	GX_SetTevAlphaOp(currTev, GX_TEV_ADD, GX_TB_ADDHALF, GX_CS_SCALE_2, GX_ENABLE, GX_TEVPREV);
-	GX_SetNumTevStages(1);
-	GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX16);
-		*texChannels = 1;
+	if (!(m_lockedRegs & (GX_TEVREG0 << 1))) return GX_TEVREG0;
+	if (!(m_lockedRegs & (GX_TEVREG1 << 1))) return GX_TEVREG1;
+	if (!(m_lockedRegs & (GX_TEVREG2 << 1))) return GX_TEVREG2;
+	if (!(m_lockedRegs & (GX_TEVPREV << 1))) return GX_TEVPREV;
+	return 0xff;//Invalid
 }
 
+//------------------------------------------------------------
+TTexture::TTexture(const char * _filename, const bool _alpha)
+{
+	//Allocate the texObj
+	m_pGXTexture = (GXTexObj*)memalign(32, sizeof(GXTexObj));
+	PNGUPROP imgProp;
+	IMGCTX ctx = PNGU_SelectImageFromDevice(_filename);
+	PNGU_GetImageProperties(ctx,&imgProp);
+	//Allocate data
+	void * data = memalign(32, imgProp.imgWidth * imgProp.imgHeight * 4);
+	PNGU_DecodeTo4x4RGBA8 (ctx, imgProp.imgWidth, imgProp.imgHeight, data, 255);
+	PNGU_ReleaseImageContext (ctx);
+	DCFlushRange (data, imgProp.imgWidth * imgProp.imgHeight * 4);
+	GX_InitTexObj (m_pGXTexture, data, imgProp.imgWidth, imgProp.imgHeight, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	
+	m_alpha = _alpha;
+}
+
+//------------------------------------------------------------
+TTexture::~TTexture()
+{
+	delete m_pGXTexture;
+}
+
+//------------------------------------------------------------
+void TTexture::setTev(TTevInfo& _info)
+{
+	if(!m_pGXTexture) return;
+	//TODO: support coordinate generation
+	//Load the map
+	if(m_pGXTexture)
+	GX_LoadTexObj(m_pGXTexture, GX_TEXMAP0);
+	GX_SetTevColorIn(_info.tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+	GX_SetTevColorOp(_info.tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, _info.outReg);
+	if(m_alpha)
+	{
+		GX_SetTevAlphaIn(_info.tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_TEXA);
+		GX_SetTevAlphaOp(_info.tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, _info.outReg);
+	}
+	else
+	{
+		GX_SetTevAlphaIn(_info.tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+		GX_SetTevAlphaOp(_info.tevStage, GX_TEV_ADD, GX_TB_ADDHALF, GX_CS_SCALE_2, GX_ENABLE, _info.outReg);
+	}
+	GX_SetTevOrder(_info.tevStage, _info.texCoords, _info.texMap, GX_COLORNULL);
+	++_info.tevStage;
+	++_info.texMap;
+	++_info.texCoords;
+}
+
+//------------------------------------------------------------
+TDiffuseMaterial::TDiffuseMaterial(IMaterial * _baseMaterial)
+{
+	m_pBaseMaterial = _baseMaterial;
+}
+
+//------------------------------------------------------------
+void TDiffuseMaterial::setTev(TTevInfo& _info)
+{
+}
+
+//------------------------------------------------------------
 GXTexObj * loadPng(const char * filename)
 {
 	FILE * temp = fopen(filename, "rb");

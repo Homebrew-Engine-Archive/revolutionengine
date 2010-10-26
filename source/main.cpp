@@ -14,14 +14,20 @@ int main()
 	floorMd->scale(100000);
 	SMODEL * ballMd = new SMODEL("RevExamples/models/cube.rms");
 	SMODEL * pointMd = new SMODEL("RevExamples/models/cube.rms");
+
+	TTexture * rocksTexture = new TTexture("RevExamples/maps/plasma.png", false);
 	
 	ballMd->scale(50);
 	//Objects
 	OBJECT * floor = new OBJECT(floorMd);
+	floor->setMaterial(rocksTexture);
 	floor->m_clr = SC_LBLUE;
 	OBJECT * ball01 = new OBJECT(ballMd, vector3(0, 0, 50));
 	OBJECT * ball02 = new OBJECT(ballMd, vector3(150, 0, 50));
 	OBJECT * ball03 = new OBJECT(pointMd, vector3(-150, 0, 50));
+	ball01->setMaterial(rocksTexture);
+	ball02->setMaterial(rocksTexture);
+	ball03->setMaterial(rocksTexture);
 	ball02->body = new SPHEREBD(50);
 	ball01->body = new SPHEREBD(50);
 	ball02->setSpeed(vector3(0, 100, -100), nullVector);
@@ -51,7 +57,7 @@ int main()
 		//Before every frame
 		REV_preProcess();
 		//If someone pressed home, exit
-		/*if(WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME)
+		if(WPAD_ButtonsDown(0) & WPAD_BUTTON_HOME)
 		{
 			REV_exit();
 		}
@@ -67,7 +73,7 @@ int main()
 			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_RIGHT) defaultCam->rotate(AXIS_Z, -45*gameTime);
 			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_LEFT) defaultCam->rotate(AXIS_Z, 45*gameTime);
 			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_UP) defaultCam->move(vector3(0,500*gameTime,0),RT_SELF);
-			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_DOWN) defaultCam->move(vector3(5,-100*gameTime,0),RT_SELF);
+			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_DOWN) defaultCam->move(vector3(0,-100*gameTime,0),RT_SELF);
 		}
 		//Updates
 		if(keyState[KEY_H]) screenShot("SunnyDay.png");
@@ -79,7 +85,7 @@ int main()
 		ball01->setSpeed(vector3(sx,sy,sz),nullVector);
 		if((ball01->collide(floor) >= 0)||(ball01->collide(ball02) >= 0)||(ball01->collide(ball03) >= 0))
 			ball01->m_clr = SC_RED;
-		else ball01->m_clr = SC_WHITE;*/
+		else ball01->m_clr = SC_WHITE;
 		//After every frame
 		REV_process(NULL);//
 	}

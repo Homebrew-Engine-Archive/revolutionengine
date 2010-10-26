@@ -28,7 +28,7 @@
 				CleanCommandLine="make clean"
 				Output="boot.dol"
 				PreprocessorDefinitions="GEKKO;_DEBUG"
-				IncludeSearchPath="&quot;C:\Users\technik\programacion\RevolutionEngine\REV-0.6\include&quot;;C:\devkitPro\libogc\include"
+				IncludeSearchPath="&quot;C:\Users\technik\programacion\RevolutionEngine\REV-0.6\include&quot;;C:\devkitPro\libogc\include\wiiuse;C:\devkitPro\libogc\include\ogc;C:\devkitPro\libogc\include"
 				ForcedIncludes=""
 				AssemblySearchPath=""
 				ForcedUsingAssemblies=""

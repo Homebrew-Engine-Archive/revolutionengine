@@ -391,9 +391,11 @@ void render(NODE * node, Vector camPos)
 				}
 				if(!obj->m_vMaterials.empty())
 				{
-					obj->getMaterial()->setTev(1, &clrChannels, &texChannels, endM);
-					GX_SetTevKColor(GX_KCOLOR0, obj->shadowClr);//Set id for shadows
-					obj->model->render(modelM, camPos, clrChannels, texChannels, obj->getMaterial()->specularity);
+					TTevInfo mInfo;
+					obj->getMaterial()->setTev(mInfo);
+					GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX16);
+					GX_SetNumTevStages(mInfo.tevStage);
+					obj->model->render(modelM, camPos, 0, 1, 1.0f);//obj->getMaterial()->specularity);*/
 				}
 				else
 				{
