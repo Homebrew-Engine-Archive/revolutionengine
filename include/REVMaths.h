@@ -7,6 +7,8 @@
 #ifndef REV_MATHS_H
 #define REV_MATHS_H
 
+#include "REVUtils.h"
+
 typedef f32	Mtx23[2][3];//2D matrix
 typedef f32 (*Mtx23P)[3];//2D matrix pointer
 
@@ -36,7 +38,5 @@ void mtx23VecMultiply(f32 x0, f32 y0, Mtx23 m, f32 * x, f32 * y);
 void mtx23VecMultiplySR(f32 x0, f32 y0, Mtx23 m, f32 * x, f32 * y);
 
 f32 fastInverseSqrt(f32 a);
-
-void REVVectorNormalize(Vector * v);
 
 #endif
