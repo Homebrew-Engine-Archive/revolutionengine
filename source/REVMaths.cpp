@@ -3,7 +3,18 @@
 //Revolution Engine 0.5
 ///////////////////////////////////
 //Maths source file
-#include "REV.h"
+
+//External header files
+#include <cstdio>
+#include <stdlib.h>
+#include <ogcsys.h>
+#include <gccore.h>
+#include <math.h>
+#include <sys/dir.h>
+#include <sys/statvfs.h>
+#include <unistd.h>
+
+#include "REVMaths.h"
 
 void mtx23Identity(Mtx23 m)
 {
