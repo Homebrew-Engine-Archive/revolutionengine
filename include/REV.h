@@ -26,6 +26,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include <map>
+
 //Revolution engine header files
 #include "REVUtils.h"
 #include "REVConfig.h"
@@ -39,7 +41,6 @@ extern "C"
 #include "REVNodes.h"
 #include "REVLights.h"
 #include "REVCameras.h"
-#include "REVTextures.h"
 #include "REVMaterials.h"
 #include "REVScreen.h"
 #include "REVFonts.h"
@@ -66,7 +67,7 @@ public:
 	void enableShadows(LIGHT * l, SDW_PARAMS shadow);
 	u8 shadowsEnabled();
 private:
-	R2TEXTURE * fstTex;//So al of them are updated every frame
+	std::multimap<CAMERA*, TRender2Texture*> m_Render2Textures;
 	PANEL * fstView;
 	NODE * rootNode;
 	N2D * rootN2D;
@@ -84,7 +85,7 @@ friend class HTCAMERA;
 friend class LIGHT;
 friend class AMODEL;//Temporary
 friend class SMODEL;//Temporary
-friend class R2TEXTURE;
+friend class TRender2Texture;
 friend class BUTTON;
 friend void REV_preProcess(void);
 friend void render(NODE * node, Vector camPos);

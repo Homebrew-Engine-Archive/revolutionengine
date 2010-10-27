@@ -7,6 +7,8 @@
 #ifndef REV_MATERIALS_H
 #define REV_MATERIALS_H
 
+#include <map>
+
 //Hermes tiling function
 #define TILE_LITTLE_ENDIAN 128 // change the byte order in the color
 #define TILE_CI4       0 // for CI4  (color index of 4 bits)
@@ -19,7 +21,6 @@
 #define TILE_RGBA8     6 // for RGBA8
 #define TILE_SRGBA8    7 // for RGBA8 with R and B swapped
 
-//New implementation
 class TTevInfo
 {
 public:
@@ -45,14 +46,41 @@ public:
 class TTexture : public IMaterial
 {
 public:
+	TTexture					(const bool alpha = true);
 	TTexture					(const char * filename,const bool alpha = true);
 	~TTexture					();
-	virtual bool	usesAlpha	()								{ return m_alpha; }
+	virtual bool	usesAlpha	()								{ return m_alpha;		}
+
+	GXTexObj	*	getTexture	()								{ return m_pGXTexture;	}
 protected:
 	virtual void	setTev		(TTevInfo& info);
 	GXTexObj	*	m_pGXTexture;
+	void		*	m_pData;//Buffer to store the render
 private:
 	bool	m_alpha;
+};
+
+class TRender2Texture: public TTexture
+{
+public:
+	TRender2Texture	(CAMERA *const camera, const u16 size_x, const u16 size_y, const bool alpha = true);
+	~TRender2Texture();
+
+	void			setCamera			(CAMERA * pCamera);
+	CAMERA *		getCamera			()			const		{ return m_pCamera; }
+	void			resize				(u16 x, u16 y);
+
+	std::multimap<CAMERA*, TRender2Texture*>::iterator getRender2Texture(TRender2Texture* _target);
+
+protected:
+	virtual void	setForRender		(Mtx44 m)	const;
+private:
+	void			copyTexture			();
+protected:
+	CAMERA	*	m_pCamera;
+	u16			m_sx,
+				m_sy;// Size in pixels
+	friend void REV_process(tMapQ3*);
 };
 
 class TDiffuseMaterial : public IMaterial
@@ -63,33 +91,6 @@ public:
 	IMaterial	*	m_pBaseMaterial;
 protected:
 	virtual void	setTev		(TTevInfo& info);
-};
-
-//Old implementation
-class MATERIAL
-{
-public:
-	MATERIAL();
-	f32 specularity;
-	u8 flags;
-protected:
-	u8 type;
-private:
-	virtual void setTev(u8 nUVs, u8 * clrChannels, u8 * texChannels, u32 lightMask)=0;
-friend void render(NODE * node, Vector camPos);
-};
-
-class BMATERIAL:public MATERIAL
-{
-public:
-	BMATERIAL(TEXTURE * map);//Check for tex before render
-	TEXTURE * map;
-private:
-	virtual void setTev(u8 nUVs, u8 * clrChannels, u8 * texChannels, u32 lightMask);
-};
-
-class TMATERIAL:public MATERIAL
-{
 };
 
 GXTexObj * loadPng(const char * filename);

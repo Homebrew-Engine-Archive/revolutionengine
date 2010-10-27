@@ -213,7 +213,6 @@ ROOT::ROOT()
 	fstLight = NULL;
 	fstHTC = NULL;
 	fstBtn = NULL;
-	fstTex = NULL;
 	shadowCaster = NULL;
 	stencilBuffer = NULL;
 }
@@ -226,7 +225,7 @@ void ROOT::init(f32 w, f32 h)
 	//Init cameras
 	defaultCam = new CAMERA();
 	//Create main Viewport
-	R2TEXTURE * mainR2T = new R2TEXTURE(defaultCam,w,h);
+	TRender2Texture * mainR2T = new TRender2Texture(defaultCam,w,h);
 	fstView = new PANEL(vector3(0,0,1),w,h,mainR2T);
 	
 	REVConsole = new CONSOLE();
@@ -421,7 +420,6 @@ void REV_process(tMapQ3 * map)
 	//Variables
 	f32 preWait = 0, postWait = 0;
 	static u8 firstFrame = 1;
-	R2TEXTURE * tTex = mainRoot->fstTex;
 	TRACKER * auxT;
 	setUp3D();
 	//Wait just before drawing (instead of after), this should enhance performance
@@ -441,13 +439,14 @@ void REV_process(tMapQ3 * map)
 	//Render each Viewport into it's texture
 	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
 	//GX_SetZMode (GX_TRUE, GX_LEQUAL, GX_TRUE);
-	while(tTex)
+	std::multimap<CAMERA*, TRender2Texture*>::iterator iter = mainRoot->m_Render2Textures.begin();
+	for(;iter != mainRoot->m_Render2Textures.end(); ++iter)
 	{
-		tTex->setForRender(perspective);
-		tTex->cam->setForRender(view);
+		(*iter).second->setForRender(perspective);
+		(*iter).second->getCamera()->setForRender(view);
 		//Before rendering the scene, render the skyBox
 		GX_SetZMode (GX_FALSE, GX_LEQUAL, GX_TRUE);
-		mainRoot->skyBox.render(tTex->cam);
+		mainRoot->skyBox.render((*iter).second->getCamera());
 		GX_SetZMode (GX_TRUE, GX_LEQUAL, GX_TRUE);
 		//Now render the map
 		//GX_LoadPosMtxImm(view, GX_PNMTX0);
@@ -461,20 +460,18 @@ void REV_process(tMapQ3 * map)
 		auxT = solidQueue;
 		while(auxT)
 		{
-			render(auxT->target, tTex->cam->getPos());
+			render(auxT->target, (*iter).second->getCamera()->getPos());
 			auxT = auxT->next;
 		}
-		orderQueue(tTex->cam);
+		orderQueue((*iter).second->getCamera());
 		auxT = transQueue;
 		while(auxT)
 		{
-			render(auxT->target, tTex->cam->getPos());
+			render(auxT->target, (*iter).second->getCamera()->getPos());
 			auxT = auxT->next;
 		}
 		//Copy the embeded frame buffer to the texture
-		tTex->copyTexture();
-		//
-		tTex = tTex->next;//prepare next texture
+		(*iter).second->copyTexture();
 	}
 	while(solidQueue)
 	{

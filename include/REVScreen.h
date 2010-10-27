@@ -10,8 +10,8 @@
 class PANEL:public N2D
 {
 public:
-	PANEL(Vector pos = nullVector, f32 sx = 50.0f, f32 sy = 50.0f, TEXTURE * texture = NULL, GXColor = SC_WHITE, u8 flags = F_Visible);
-	TEXTURE * texture;
+	PANEL(Vector pos = nullVector, f32 sx = 50.0f, f32 sy = 50.0f, TTexture * texture = NULL, GXColor = SC_WHITE, u8 flags = F_Visible);
+	TTexture * texture;
 	GXColor clr;
 	virtual void setSize(f32 x, f32 y);
 	Vector getSize();
@@ -27,7 +27,7 @@ friend class VIEWPORT;
 class WINDOW:public PANEL
 {
 public:
-	WINDOW(Vector pos, f32 sx, f32 sy, TEXTURE * texture, u8 flags = F_Visible);
+	WINDOW(Vector pos, f32 sx, f32 sy, TTexture * texture, u8 flags = F_Visible);
 	void setWindowRect(f32 x0,f32 y0,f32 size_x,f32 size_y);
 	RECTANGLE getWindowSize();
 protected:
@@ -41,7 +41,7 @@ friend void render2D();
 class BUTTON:public PANEL
 {
 public:
-	BUTTON(Vector pos = nullVector, f32 sx = 50.0f, f32 sy = 50.0f, TEXTURE * texture = NULL, GXColor = SC_WHITE, u8 flags = F_Visible);
+	BUTTON(Vector pos = nullVector, f32 sx = 50.0f, f32 sy = 50.0f, TTexture * texture = NULL, GXColor = SC_WHITE, u8 flags = F_Visible);
 	u8 mode;
 	void (*onClick)(u8 channel, BUTTON * self);
 	void (*onHeld)(u8 channel, BUTTON * self);

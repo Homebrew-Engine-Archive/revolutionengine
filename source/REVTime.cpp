@@ -5,7 +5,24 @@
 //Time Source file
 
 //header files
-#include "REV.h"
+#include <cstdio>
+#include <stdlib.h>
+#include <string.h>
+#include <malloc.h>
+#include <ogcsys.h>
+#include <gccore.h>
+#include <math.h>
+#include <wiiuse/wpad.h>
+#include <fat.h>
+#include <pngu.h>
+#include <time.h>
+#include <ogc/lwp_watchdog.h>
+#include <sys/dir.h>
+#include <sys/statvfs.h>
+#include <wiikeyboard/keyboard.h>
+#include <unistd.h>
+
+#include "REVTime.h"
 
 f32 frameTime, gameTime, timeSpeed = 1.0f;
 f32 last_frame = 0;

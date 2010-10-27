@@ -4,7 +4,29 @@
 ///////////////////////////////////
 //Physics
 
-#include "REV.h"
+#include <cstdio>
+#include <stdlib.h>
+#include <string.h>
+#include <malloc.h>
+#include <ogcsys.h>
+#include <gccore.h>
+#include <math.h>
+#include <wiiuse/wpad.h>
+#include <fat.h>
+#include <pngu.h>
+#include <time.h>
+#include <ogc/lwp_watchdog.h>
+#include <sys/dir.h>
+#include <sys/statvfs.h>
+#include <wiikeyboard/keyboard.h>
+#include <unistd.h>
+
+#include "REVUtils.h"
+#include "REVTime.h"
+#include "REVPhysics.h"
+#include "REVNodes.h"
+
+#include "REV.h"//Will be replaced b REVRoot.h
 
 typedef struct _tracker{
 	NODE * target;

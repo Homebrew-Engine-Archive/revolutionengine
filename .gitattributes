@@ -1,9 +1,5 @@
 * text=auto !eol
 /Makefile -text
-/REV-0.6.ncb -text
-/REV-0.6.sln -text
-/REV-0.6.suo -text
-/REV-0.6.vcproj -text
 include/REV.h -text
 include/REVCameras.h -text
 include/REVConfig.h -text
@@ -23,7 +19,6 @@ include/REVResourceMgr.h -text
 include/REVScreen.h -text
 include/REVScript.h -text
 include/REVSkybox.h -text
-include/REVTextures.h -text
 include/REVTime.h -text
 include/REVUtils.h -text
 include/lua/lapi.h -text
@@ -67,7 +62,6 @@ source/REVResourceMgr.cpp -text
 source/REVScreen.cpp -text
 source/REVScript.cpp -text
 source/REVSkybox.cpp -text
-source/REVTextures.cpp -text
 source/REVTime.cpp -text
 source/fontface.s -text
 source/lua/lapi.c -text

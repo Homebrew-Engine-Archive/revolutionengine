@@ -15,7 +15,7 @@ class OBJECT:public NODE
 {
 public:
 	OBJECT						(MODEL * model = NULL, Vector pos = nullVector, u8 flags = F_Visible);
-	OBJECT						(MODEL * model, MATERIAL * material, Vector pos = nullVector, u8 flags = F_Visible);
+	//OBJECT						(MODEL * model, MATERIAL * material, Vector pos = nullVector, u8 flags = F_Visible);
 	
 	bool		usesAlpha		();//To decide how to render this object
 	void		setMaterial		(IMaterial * material, u8 slot = 0);//No more than 255 material slots allowed

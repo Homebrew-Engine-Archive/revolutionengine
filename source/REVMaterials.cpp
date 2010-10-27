@@ -6,6 +6,10 @@
 
 #include "REV.h"
 
+#include <map>
+
+using namespace std;
+
 //------------------------------------------------------------
 TTevInfo::TTevInfo()
 {
@@ -39,6 +43,14 @@ u8 TTevInfo::getFreeReg()
 }
 
 //------------------------------------------------------------
+TTexture::TTexture(const bool _alpha)
+{
+	m_alpha = _alpha;
+	m_pData = NULL;
+	m_pGXTexture = NULL;
+}
+
+//------------------------------------------------------------
 TTexture::TTexture(const char * _filename, const bool _alpha)
 {
 	//Allocate the texObj
@@ -47,11 +59,11 @@ TTexture::TTexture(const char * _filename, const bool _alpha)
 	IMGCTX ctx = PNGU_SelectImageFromDevice(_filename);
 	PNGU_GetImageProperties(ctx,&imgProp);
 	//Allocate data
-	void * data = memalign(32, imgProp.imgWidth * imgProp.imgHeight * 4);
-	PNGU_DecodeTo4x4RGBA8 (ctx, imgProp.imgWidth, imgProp.imgHeight, data, 255);
+	m_pData = memalign(32, imgProp.imgWidth * imgProp.imgHeight * 4);
+	PNGU_DecodeTo4x4RGBA8 (ctx, imgProp.imgWidth, imgProp.imgHeight, m_pData, 255);
 	PNGU_ReleaseImageContext (ctx);
-	DCFlushRange (data, imgProp.imgWidth * imgProp.imgHeight * 4);
-	GX_InitTexObj (m_pGXTexture, data, imgProp.imgWidth, imgProp.imgHeight, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	DCFlushRange (m_pData, imgProp.imgWidth * imgProp.imgHeight * 4);
+	GX_InitTexObj (m_pGXTexture, m_pData, imgProp.imgWidth, imgProp.imgHeight, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	
 	m_alpha = _alpha;
 }
@@ -59,7 +71,8 @@ TTexture::TTexture(const char * _filename, const bool _alpha)
 //------------------------------------------------------------
 TTexture::~TTexture()
 {
-	delete m_pGXTexture;
+	free(m_pData);
+	free(m_pGXTexture);
 }
 
 //------------------------------------------------------------
@@ -86,6 +99,98 @@ void TTexture::setTev(TTevInfo& _info)
 	++_info.tevStage;
 	++_info.texMap;
 	++_info.texCoords;
+}
+
+//------------------------------------------------------------
+TRender2Texture::TRender2Texture(CAMERA *const _pCamera, const u16 _sx, const u16 _sy, const bool _alpha):TTexture(_alpha)
+{
+	m_pCamera = _pCamera;
+	m_sx = _sx;
+	m_sy = _sy;
+	//Allocate memory for the buffer
+	m_pData = memalign(32, sizeof(GXColor)*m_sx*m_sy);
+	//Create the texture object
+	m_pGXTexture = (GXTexObj*)memalign(32, sizeof(GXTexObj));//Probably we can do the Init here also
+	//Register into main Root
+	mainRoot->m_Render2Textures.insert(pair<CAMERA*, TRender2Texture*>(_pCamera, this));
+}
+
+//------------------------------------------------------------
+////This method should be moved to ROOT
+multimap<CAMERA*, TRender2Texture*>::iterator TRender2Texture::getRender2Texture(TRender2Texture* _target)
+{
+	//Get the whole range of Render2Texture that use this camera
+	CAMERA * pCamera = _target->getCamera();
+	pair<multimap<CAMERA*, TRender2Texture*>::iterator, multimap<CAMERA*, TRender2Texture*>::iterator> range =
+		mainRoot->m_Render2Textures.equal_range(pCamera);
+	//Find the exact iterator
+	multimap<CAMERA*, TRender2Texture*>::iterator iter = range.first;
+	for(; (*iter).first == pCamera; ++iter)
+	{
+		if((*iter).second == _target)
+			return iter;
+	}
+	return mainRoot->m_Render2Textures.end();//Not found
+}
+
+//------------------------------------------------------------
+TRender2Texture::~TRender2Texture()
+{
+	mainRoot->m_Render2Textures.erase(getRender2Texture(this));
+	free(m_pGXTexture);
+}
+
+//------------------------------------------------------------
+void TRender2Texture::setCamera(CAMERA * _pCamera)
+{
+	//Remove the old iterator in the general map that pointed to this cam
+	mainRoot->m_Render2Textures.erase(getRender2Texture(this));
+	//And add the new one
+	m_pCamera = _pCamera;
+	//TODO: register in the map
+	mainRoot->m_Render2Textures.insert(pair<CAMERA*, TRender2Texture*>(_pCamera, this));
+}
+
+//------------------------------------------------------------
+void TRender2Texture::resize(u16 _sx, u16 _sy)
+{
+	//Free the old buffer
+	if(m_pData) free(m_pData);
+	//And allocate a new one
+	m_sx = _sx;
+	m_sy = _sy;
+	m_pData = memalign(32, sizeof(GXColor)*m_sx*m_sy);
+}
+
+//------------------------------------------------------------
+void TRender2Texture::setForRender(Mtx44 _proyection) const
+{
+	if(m_pCamera)
+	{
+		if(m_pCamera->getType() == NT_CAM)
+			guPerspective(_proyection, m_pCamera->fov, m_sx/m_sy, m_pCamera->ncd, m_pCamera->fcd);
+		if(m_pCamera->getType() == NT_HTCAM)
+		{
+
+			Vector v = m_pCamera->getPos(); 
+			//TODO:: support Head-tracking cameras
+		}
+		GX_LoadProjectionMtx(_proyection, GX_PERSPECTIVE);
+		GX_SetViewport(0,0,m_sx,m_sy,0.0f,1.0f);
+		GX_SetScissor(0,0,m_sx,m_sy);
+	}
+}
+
+//------------------------------------------------------------
+void TRender2Texture::copyTexture()
+{
+	GX_SetCopyFilter(GX_FALSE, NULL, GX_FALSE, NULL);
+	GX_SetTexCopySrc(0, 0, m_sx, m_sy);
+	GX_SetTexCopyDst(m_sx, m_sy, GX_TF_RGBA8, GX_FALSE);
+	GX_CopyTex(m_pData, GX_TRUE);
+	GX_PixModeSync();
+	//Init texture
+	GX_InitTexObj(m_pGXTexture, m_pData, m_sx, m_sy, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
 }
 
 //------------------------------------------------------------

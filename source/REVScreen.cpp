@@ -185,7 +185,7 @@ void parse2D(N2D * node)
 	}
 }
 
-PANEL::PANEL(Vector pos, f32 sx, f32 sy, TEXTURE * texture, GXColor clr, u8 flags)
+PANEL::PANEL(Vector pos, f32 sx, f32 sy, TTexture * texture, GXColor clr, u8 flags)
 {
 	this->sx = sx;
 	this->sy = sy;
@@ -200,7 +200,7 @@ Vector PANEL::getSize(){
 	return vector2(sx, sy);
 }
 
-BUTTON::BUTTON(Vector pos, f32 sx, f32 sy, TEXTURE * texture, GXColor clr, u8 flags)
+BUTTON::BUTTON(Vector pos, f32 sx, f32 sy, TTexture * texture, GXColor clr, u8 flags)
 {
 	//just like a panel
 	this->sx = sx;
@@ -250,7 +250,7 @@ void PANEL::render()
 	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
 	if(texture)
 	{
-		GX_LoadTexObj(texture->tex, GX_TEXMAP0);
+		GX_LoadTexObj(texture->getTexture(), GX_TEXMAP0);
 		GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
 		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
 		GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_TEXA, GX_CA_A0, GX_CA_ZERO);
@@ -453,7 +453,7 @@ N2D * pointerGetNexus(u8 channel)
 	return cursor[channel].nexus;
 }
 
-WINDOW::WINDOW(Vector pos, f32 sx, f32 sy, TEXTURE * texture, u8 flags)
+WINDOW::WINDOW(Vector pos, f32 sx, f32 sy, TTexture * texture, u8 flags)
 {
 	this->setPos(pos,RT_ABS);
 	this->setSize(sx,sy);
@@ -491,7 +491,7 @@ void WINDOW::render()
 	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
 	if(texture)
 	{
-		GX_LoadTexObj(texture->tex, GX_TEXMAP0);
+		GX_LoadTexObj(texture->getTexture(), GX_TEXMAP0);
 		GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
 		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);
 		GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_TEXA, GX_CA_A0, GX_CA_ZERO);
