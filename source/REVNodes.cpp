@@ -34,6 +34,11 @@ NODE::NODE(u8 flags)
 
 NODE::~NODE()
 {
+	if(!parent)//This is root node
+	{
+		clearChildren();
+		return;
+	}
 	releaseChildren();
 	if(parent->child == this)
 	{
@@ -385,12 +390,19 @@ void NODE::setMass(f32 mass)
 	this->mass = mass;
 }
 
+//-------------------------------------------------------------------------------------
 void NODE::setSpeed(Vector linear, Vector angular)
 {
 	this->speed = linear;
 	this->aSpeed = angular;
 }
 
+//-------------------------------------------------------------------------------------
+void NODE::render()
+{
+	//TODO: Add debug code to draw xyz axes
+}
+//-------------------------------------------------------------------------------------
 N2D::N2D(u8 flags)
 {
 	this->flags = flags;

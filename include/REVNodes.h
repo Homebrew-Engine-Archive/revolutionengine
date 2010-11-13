@@ -7,6 +7,9 @@
 #ifndef REV_NODES_H
 #define REV_NODES_H
 
+//Forward declarations
+class BODY;
+
 class NODE
 {
 public:
@@ -14,36 +17,37 @@ public:
 	NODE	(u8 flags = F_Visible);
 	~NODE	();
 	//Children management functions
-	void attach			(NODE * parent, u8 coord = RT_ABS);
-	void addChild		(NODE * child, u8 coord = RT_ABS);//Keep abs coordinates?
-	void deattach		(u8 coord = RT_ABS);
-	void releaseChildren(u8 coord = RT_ABS);
-	void clearChildren	();
-	NODE * getChild		()										{	return child;		}
-	NODE * getNext		()										{	return next;		}
-	NODE * getParent	()										{	return parent;		}
+	void	attach			(NODE * parent, u8 coord = RT_ABS);
+	void	addChild		(NODE * child, u8 coord = RT_ABS);//Keep abs coordinates?
+	void	deattach		(u8 coord = RT_ABS);
+	void	releaseChildren(u8 coord = RT_ABS);
+	void	clearChildren	();
+	NODE	* getChild		()										{	return child;		}
+	NODE	* getNext		()										{	return next;		}
+	NODE	* getParent		()										{	return parent;		}
 	//Displacement functions
 	//references: himself, parent, root
-	void move			(Vector move, u8 reference = RT_SELF);
-	void rotate			(Vector axis, f32 angle, u8 coord = RT_ABS);
-	void setPos			(Vector pos, u8 reference = RT_ABS);//Just parent or absolute
-	Vector getPos		(u8 reference = RT_ABS);
-	void parentMtx		(Mtx m);
-	void absMtx			(Mtx m);
-	void lookAt			(Vector look);
+	void	move			(Vector move, u8 reference = RT_SELF);
+	void	rotate			(Vector axis, f32 angle, u8 coord = RT_ABS);
+	void	setPos			(Vector pos, u8 reference = RT_ABS);//Just parent or absolute
+	Vector	getPos			(u8 reference = RT_ABS);
+	void	parentMtx		(Mtx m);
+	void	absMtx			(Mtx m);
+	void	lookAt			(Vector look);
 	//Physics related
-	void (*react)		(NODE * self, NODE * n);//React to collisions pointer
-	BODY * body;
-	f32 collide			(NODE * n);
-	f32 getMass			()										{	return mass;		}
-	void setMass		(f32 mass);
-	void setSpeed		(Vector linear, Vector angular = nullVector);//Update to reference coordinates
-	Vector getSpeed		(u8 reference = RT_ABS)					{	return speed;		}
+	void	(*react)		(NODE * self, NODE * n);//React to collisions pointer
+	BODY	* body;
+	f32		collide			(NODE * n);
+	f32		getMass			()										{	return mass;		}
+	void	setMass			(f32 mass);
+	void	setSpeed		(Vector linear, Vector angular = nullVector);//Update to reference coordinates
+	Vector	getSpeed		(u8 reference = RT_ABS)					{	return speed;		}
 	//Other
-	u8 getType			()										{	return type;		}
-	void * custom;
+	u8		getType			()										{	return type;		}
+	virtual bool	isRenderable()									{	return false;		}
+	void	* custom;
 protected:
-	void render();
+	virtual void render	();
 	//Physics
 	f32 mass;
 	Mtx inertia;
