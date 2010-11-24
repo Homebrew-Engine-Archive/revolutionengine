@@ -4,7 +4,7 @@
 ///////////////////////////////////
 #include "REV.h"
 
-N2D * MN;
+/*N2D * MN;
 
 void returnToLoader(u8 channel, BUTTON * self)
 {
@@ -32,4 +32,4 @@ void REV_homeMenu(void)
 {
 	//HBMCUSTOM * cm = (HBMCUSTOM*)MN->custom;
 	//MN->flags = F_Visible;
-}
+}*/
