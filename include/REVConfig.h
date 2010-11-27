@@ -24,4 +24,14 @@ Change work configuration of the engine here
 #define TEXT_DEFAULT_LENGTH			32
 #define MAX_PATH					128
 
+//Definitions that control debugging helpers for GX
+/*
+* 0 means no printing,
+* > 0 means how many indices you want to print
+* -1 means print all calls
+*/
+#define REVGX_PRINT_VIDX			12//Print vertex idx to console
+#define REVGX_PRINT_NIDX			0//Print normal idx to console
+#define REVGX_PRINT_TIDX			0//Print texture idx to console
+
 #endif

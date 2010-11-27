@@ -184,6 +184,7 @@ void TRender2Texture::setForRender(Mtx44 _proyection) const
 //------------------------------------------------------------
 void TRender2Texture::copyTexture()
 {
+	//REVConsole->write("Copy texture");
 	GX_SetCopyFilter(GX_FALSE, NULL, GX_FALSE, NULL);
 	GX_SetTexCopySrc(0, 0, m_sx, m_sy);
 	GX_SetTexCopyDst(m_sx, m_sy, GX_TF_RGBA8, GX_FALSE);

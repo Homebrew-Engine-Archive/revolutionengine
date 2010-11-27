@@ -4,7 +4,7 @@
 ///////////////////////////////////
 //Md5 source file
 
-#include "REV.h"
+/*#include "REV.h"
 
 AMODEL::AMODEL(const char * fileName, u8 format)
 {
@@ -439,5 +439,5 @@ void AMODEL::specularLightsClr(Mtx absMtx, f32 specularity, Vector camPos, AMESH
 	if(r0 > 255) r = 255; else r = (u8)r0;
 	if(g0 > 255) g = 255; else g = (u8)g0;
 	if(b0 > 255) b = 255; else b = (u8)b0;
-	GX_Color4u8/*(125,125,125,125);*/(r, g, b, a);
-}
+	GX_Color4u8(r, g, b, a);
+}*/

@@ -4,7 +4,9 @@ include/REV.h -text
 include/REVCameras.h -text
 include/REVConfig.h -text
 include/REVConsole.h -text
+include/REVExternal.h -text
 include/REVFonts.h -text
+include/REVGXWrappers.h -text
 include/REVHBMenu.h -text
 include/REVLights.h -text
 include/REVMaterials.h -text
@@ -48,6 +50,7 @@ source/REV.cpp -text
 source/REVCameras.cpp -text
 source/REVConsole.cpp -text
 source/REVFonts.cpp -text
+source/REVGXWrappers.cpp -text
 source/REVHBMenu.cpp -text
 source/REVLights.cpp -text
 source/REVMaterials.cpp -text

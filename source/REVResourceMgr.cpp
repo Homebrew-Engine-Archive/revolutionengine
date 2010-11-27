@@ -14,7 +14,7 @@ RSCMGR::~RSCMGR()
 }
 
 //------------------------------------------------------------
-RSC<SMODEL> * RSCMGR::getSmodel(const char * name)
+RSC<TModel> * RSCMGR::getSmodel(const char * name)
 {
 	return m_pSmodels->getChildRsc(name);
 }

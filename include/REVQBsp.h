@@ -78,7 +78,7 @@ typedef struct TLeafBrush
 	int					mBrushIndex;		// Brush index.  
 }tLeafBrush;
 
-typedef struct TModel
+typedef struct TQModel
 {
 	float				mMins[3];			// Bounding box min coord.  
 	float				mMaxs[3];			// Bounding box max coord.  

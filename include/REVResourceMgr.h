@@ -50,9 +50,9 @@ public:
 	~RSCMGR();
 
 	//Accessing resources
-	RSC<SMODEL> * getSmodel(const char * name);
+	RSC<TModel> * getSmodel(const char * name);
 private:
-	RSC<SMODEL> * m_pSmodels;
+	RSC<TModel> * m_pSmodels;
 };
 
 #endif

@@ -21,6 +21,10 @@
 #define TILE_RGBA8     6 // for RGBA8
 #define TILE_SRGBA8    7 // for RGBA8 with R and B swapped
 
+//Forward declarations
+class CAMERA;
+struct TMapQ3;
+
 class TTevInfo
 {
 public:
@@ -80,7 +84,7 @@ protected:
 	CAMERA	*	m_pCamera;
 	u16			m_sx,
 				m_sy;// Size in pixels
-	friend void REV_process(tMapQ3*);
+	friend void REV_process(struct TMapQ3*);
 };
 
 class TDiffuseMaterial : public IMaterial

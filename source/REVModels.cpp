@@ -4,508 +4,292 @@
 ///////////////////////////////////
 //Models source file
 
-//header files
+#include "REVExternal.h"
+#include "REVModels.h"
+#include "REVMaterials.h"
+#include "REVLights.h"
+
+#include "REVConsole.h"
+
 #include "REV.h"
 
-//Definitions
-#define LINESIZE 60
+#include "REVConfig.h"
 
-//Prototypes
-void getValidRmdLine(FILE * f);
+#include <map>
 
-//Global data
-char linebuffer[LINESIZE];
-
-u8 MODEL::getType()
-{
-	return type;
-}
-
-SMODEL::SMODEL(const char * fileName, u8 format)
-{
-	UVSET * uv;
-	Vector * tNml;
-	flags = 0;
-	type = MDT_STATIC;
-	u16 u16data, i, j;
-	if(!fileName)
-	{
-		type = MDT_BAD;
-		return;
-	}
-	switch(format)
-	{
-		case FF_RMS:
-		{
-			FILE * f = fopen(fileName, "rt");
-			if(!f)
-			{
-				type = MDT_BAD;
-				return;
-			}
-			nMeshes = 1;
-			nUVSets = 1;
-			meshes = (SMESH*)malloc(sizeof(SMESH));
-			meshes->uvSets = (UVSET*)malloc(sizeof(UVSET));
-			uv = meshes->uvSets;
-			char * datatype;
-			f32 version = 0;
-			u16 verts = 0, texts = 0, normals = 0, faces = 0;
-			
-			meshes->nVertices = 0;
-			meshes->nNormals = 0;
-			uv->nUVs = 0;
-			meshes->nTris = 0;
-			meshes->nQuads = 0;
-			
-			//Una vez declarado todo lo que vamos a usar empezamos a explorar el archivo.
-			while(!feof(f))
-			{
-				fgets(linebuffer, LINESIZE, f);
-				if(!feof(f))
-				{
-					datatype = strtok(linebuffer," ");
-					if(datatype[0] != '#')//Si una linea empieza por # es que es un comentario, por tanto no se procesa
-					{//En caso contrario
-						if(datatype[0] == 'm')//Estamos ante la informacion de version de archivo
-						{
-							version = atof(strtok(NULL, " "));
-						}
-						if(datatype[0] == 'q')
-						{
-							if(datatype[1] == 'v')
-							{
-								meshes->nVertices = atoi(strtok(NULL, " "));
-								meshes->vertices = (f32*)memalign(32, meshes->nVertices*sizeof(f32)*3);
-							}
-							if(datatype[1] == 'n')
-							{
-								meshes->nNormals = atoi(strtok(NULL, " "));
-								meshes->normals = (f32*)memalign(32, meshes->nNormals*sizeof(f32)*3);
-							}
-							if(datatype[1] == 't')
-							{
-								uv->nUVs = atoi(strtok(NULL, " "));
-								uv->uvs = (f32*)memalign(32, uv->nUVs*sizeof(f32)*2);
-							}
-							if(datatype[1] == 'f')
-							{
-								meshes->nTris = atoi(strtok(NULL, " "));
-								meshes->vList = (u16*)memalign(32, meshes->nTris*sizeof(u16)*3);
-								meshes->nList = (u16*)memalign(32, meshes->nTris*sizeof(u16)*3);
-								uv->uvList = (u16*)memalign(32, meshes->nTris*sizeof(u16)*3);
-							}
-						}
-						if(datatype[0] == 'v')
-						{if(verts < meshes->nVertices){
-							meshes->vertices[verts*3] = (f32)atof(strtok(NULL, " "));
-							meshes->vertices[verts*3+1] = (f32)atof(strtok(NULL, " "));
-							meshes->vertices[verts*3+2] = (f32)atof(strtok(NULL, " "));
-							verts ++;
-						}}
-						if(datatype[0] == 'n')
-						{if(normals < meshes->nNormals){
-							meshes->normals[normals*3] = (f32)atof(strtok(NULL, " "));
-							meshes->normals[normals*3+1] = (f32)atof(strtok(NULL, " "));
-							meshes->normals[normals*3+2] = (f32)atof(strtok(NULL, " "));
-							normals ++;
-						}}
-						if(datatype[0] == 't')
-						{ if(texts < uv->nUVs){
-							uv->uvs[texts*2] = (f32)atof(strtok(NULL, " "));
-							uv->uvs[texts*2+1] = (f32)atof(strtok(NULL, " "));
-							texts ++;
-						}}
-						if(datatype[0] == 'f')
-						{if(faces < meshes->nTris){
-							meshes->vList[faces*3+2] = atoi(strtok(NULL, "/"));
-							meshes->nList[faces*3+2] = atoi(strtok(NULL, "/"));
-							uv->uvList[faces*3+2] = atoi(strtok(NULL, " "));
-							
-							meshes->vList[faces*3+1] = atoi(strtok(NULL, "/"));
-							meshes->nList[faces*3+1] = atoi(strtok(NULL, "/"));
-							uv->uvList[faces*3+1] = atoi(strtok(NULL, " "));
-							
-							meshes->vList[faces*3+0] = atoi(strtok(NULL, "/"));
-							meshes->nList[faces*3+0] = atoi(strtok(NULL, "/"));
-							uv->uvList[faces*3+0] = atoi(strtok(NULL, " "));
-							faces++;
-						}}
-					}
-				}
-			}//////*/
-			fclose(f);
-			//normalize normals
-			for(normals=0;normals<meshes->nNormals;normals++)
-			{
-				tNml = (Vector*)(&meshes->normals[3*normals]);
-				guVecNormalize(tNml);
-			}
-			DCFlushRange(meshes->vertices, meshes->nVertices*sizeof(f32)*3);
-			DCFlushRange(meshes->normals, meshes->nNormals*sizeof(f32)*3);
-			DCFlushRange(uv->uvs, uv->nUVs*sizeof(f32)*2);
-			break;
-		}
-		case FF_RMD:
-		{
-			FILE * f = fopen(fileName, "rt");
-			if(!f)
-			{
-				type = MDT_BAD;
-				return;
-			}
-			nMeshes = 1;
-			getValidRmdLine(f);
-			sscanf(linebuffer, "id 5 1 %hu", &u16data);
-			nUVSets = (u8)u16data;
-			meshes = (SMESH*)malloc(sizeof(SMESH));
-			meshes->uvSets = (UVSET*)malloc(sizeof(UVSET) * nUVSets);
-			getValidRmdLine(f);
-			sscanf(linebuffer, "q %hu %hu %hu %hu", &meshes->nVertices,
-				&meshes->nNormals, &meshes->nTris, &meshes->nQuads);
-			meshes->vertices = (f32*)memalign(32, sizeof(f32)*3*meshes->nVertices);
-			meshes->normals = (f32*)memalign(32, sizeof(f32)*3*meshes->nNormals);
-			meshes->vList = (u16*)memalign(32, sizeof(u16) *3*meshes->nTris);
-			meshes->nList = (u16*)memalign(32, sizeof(u16) *3*meshes->nTris);
-			for(i=0;i<meshes->nVertices;i++)
-			{
-				getValidRmdLine(f);
-				sscanf(linebuffer, "v %f %f %f", &meshes->vertices[3*i],
-					&meshes->vertices[3*i+1], &meshes->vertices[3*i+2]);
-			}
-			for(i=0;i<meshes->nNormals;i++)
-			{
-				getValidRmdLine(f);
-				sscanf(linebuffer, "n %f %f %f", &meshes->normals[3*i],
-					&meshes->normals[3*i+1], &meshes->normals[3*i+2]);
-			}
-			for(i=0;i<nUVSets;i++)
-			{
-				uv = &meshes->uvSets[i];
-				getValidRmdLine(f);
-				sscanf(linebuffer, "uvn %hu", &uv->nUVs);
-				uv->uvs = (f32*)memalign(32, sizeof(f32) * 2 * uv->nUVs);
-				uv->uvList = (u16*)memalign(32, sizeof(u16) *3*meshes->nTris);
-				for(j = 0; j < uv->nUVs; j++)
-				{
-					getValidRmdLine(f);
-					sscanf(linebuffer, "uv %f %f", &uv->uvs[2*j], &uv->uvs[2*j+1]);
-				}
-				for(j = 0; j < meshes->nTris; j++)
-				{
-					getValidRmdLine(f);
-					sscanf(linebuffer, "uvt %hu %hu %hu", &uv->uvList[3*j],
-						&uv->uvList[3*j+1], &uv->uvList[3*j+2]);
-				}
-			}
-			for(i = 0; i < meshes->nTris; i++)
-			{
-				getValidRmdLine(f);
-				sscanf(linebuffer, "ft %hu/%hu %hu/%hu %hu/%hu",
-					&meshes->vList[3*i], &meshes->nList[3*i],
-					&meshes->vList[3*i+1], &meshes->nList[3*i+1],
-					&meshes->vList[3*i+2], &meshes->nList[3*i+2]);
-			}
-			fclose(f);
-			DCFlushRange(meshes->vertices, meshes->nVertices*sizeof(f32)*3);
-			DCFlushRange(meshes->normals, meshes->nNormals*sizeof(f32)*3);
-			DCFlushRange(uv->uvs, uv->nUVs*sizeof(f32)*2);
-			break;
-		}
-		default:
-		{
-			type = MDT_BAD;
-			return;
-		}
-	}
-}
-
-SMODEL::~SMODEL()
-{
-	for(u16 i = 0; i < nMeshes; i++)
-	{
-		SMESH * tMesh = &(meshes[i]);
-		if(tMesh)
-		{
-			if(tMesh->vertices) free(tMesh->vertices);
-			if(tMesh->vList) free(tMesh->vList);
-			if(tMesh->normals) free(tMesh->normals);
-			if(tMesh->nList) free(tMesh->nList);
-			for(u16 j= 0; j < nUVSets; j++)
-			{
-				UVSET * uv = &(tMesh->uvSets[j]);
-				if(uv)
-				{
-					if(uv->uvList) free(uv->uvList);
-					if(uv->uvs) free(uv->uvs);
-					free(uv);
-				}
-			}
-			free(tMesh);
-		}
-	}
-}
-
-Vector SMODEL::getCenter()
-{
-	Vector c = nullVector;
-	Vector t;
-	for(int i = 0; i < nMeshes; i++)
-	{
-		SMESH * m = &meshes[i];
-		f32 nV = 1.0f/m->nVertices;
-		for(int j = 0; j < m->nVertices; j++)
-		{
-			t =  *((Vector*)(&m->vertices[j*3]));
-			c.x+=t.x*nV;
-			c.y+=t.y*nV;
-			c.z+=t.z*nV;
-		}
-	}
-	return c;
-}
-
-f32 SMODEL::getRadius()
-{
-	f32 r = 0.0f;
-	f32 mod;
-	Vector t;
-	for(int i = 0; i < nMeshes; i++)
-	{
-		SMESH * m = &meshes[i];
-		for(int j = 0; j < m->nVertices; j++)
-		{
-			t =  *((Vector*)(&m->vertices[j*3]));
-			mod = t.x*t.x + t.y*t.y + t.z*t.z;
-			if(mod > r) r = mod;
-		}
-	}
-	return sqrt(r);
-}
-
-void SMODEL::scale(f32 factor)
-{
-	for(u8 i = 0; i<nMeshes; i++)
-	{
-		SMESH * mesh = &meshes[i];
-		for(u16 j = 0; j < mesh->nVertices; j++)
-		{
-			mesh->vertices[j*3] *= factor;
-			mesh->vertices[j*3+1] *= factor;
-			mesh->vertices[j*3+2] *= factor;
-		}
-		DCFlushRange(mesh->vertices, mesh->nVertices*sizeof(f32)*3);
-	}
-}
-
-void SMODEL::scale(Vector factor)
-{
-	for(u8 i = 0; i<nMeshes; i++)
-	{
-		SMESH * mesh = &meshes[i];
-		for(u16 j = 0; j < mesh->nVertices; j++)
-		{
-			mesh->vertices[j*3] *= factor.x;
-			mesh->vertices[j*3+1] *= factor.y;
-			mesh->vertices[j*3+2] *= factor.z;
-		}
-		DCFlushRange(mesh->vertices, mesh->nVertices*sizeof(f32)*3);
-	}
-}
-
-void SMODEL::shadowRender()
-{
-	//Vertex descriptors
-	GX_ClearVtxDesc();
-	GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);//We only need positions of the vertices
-	for(u8 i = 0; i < nMeshes; i++)
-	{
-		SMESH * mesh = &meshes[i];
-		GX_SetArray(GX_VA_POS, mesh->vertices, 3*sizeof(f32));
-		GX_Begin(GX_TRIANGLES, GX_VTXFMT0, 3*mesh->nTris);
-		for(u16 j = 0; j<mesh->nTris; j++)
-		{
-			for(u8 k = 0; k<3; k++)
-			{
-				GX_Position1x16(mesh->vList[j*3+k]);
-			}
-		}
-		GX_End();
-	}
-}
-
-void SMODEL::render(Mtx absMtx, Vector camPos, u8 clrChannels, u8 texChannels, f32 specularity)
-{
-	GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
-	GX_SetVtxDesc(GX_VA_NRM, GX_INDEX16);
-	
-	switch(clrChannels)
-	{
-		case CC_DIFF + CC_SPEC://Both channels
-		{
-			for(u8 i = 0; i < nMeshes; i++)
-			{
-				SMESH * mesh = &meshes[i];
-				GX_SetArray(GX_VA_POS, mesh->vertices, 3*sizeof(f32));
-				GX_SetArray(GX_VA_NRM, mesh->normals, 3*sizeof(f32));
-				if(texChannels)
-					GX_SetArray(GX_VA_TEX0, mesh->uvSets->uvs, 2*sizeof(f32));
-				GX_Begin(GX_TRIANGLES, GX_VTXFMT0, 3*mesh->nTris);
-				for(u16 j = 0; j<mesh->nTris; j++)
-				{
-					for(u8 k = 0; k<3; k++)
-					{
-						GX_Position1x16(mesh->vList[j*3+k]);
-						GX_Normal1x16(mesh->nList[j*3+k]);
-						specularLightsClr(absMtx, specularity, camPos, mesh, mesh->vList[j*3+k], mesh->nList[3*j+k]);
-						if(texChannels)
-						{
-							GX_TexCoord1x16(mesh->uvSets->uvList[3*j+k]);
-						}
-					}
-				}
-				GX_End();
-			}
-			break;
-		}
-		case CC_SPEC://Specular channel
-		{
-			GX_SetChanCtrl(GX_COLOR0A0,GX_FALSE,GX_SRC_VTX,GX_SRC_VTX,GX_LIGHTNULL,GX_DF_NONE,GX_AF_NONE);
-			for(u8 i = 0; i < nMeshes; i++)
-			{
-				SMESH * mesh = &meshes[i];
-				GX_SetArray(GX_VA_POS, mesh->vertices, 3*sizeof(f32));
-				GX_Begin(GX_TRIANGLES, GX_VTXFMT0, 3*mesh->nTris);
-				for(u16 j = 0; j<mesh->nTris; j++)
-				{
-					for(u8 k = 0; k<3; k++)
-					{
-						GX_Position1x16(mesh->vList[j*3+k]);
-						GX_Normal1x16(mesh->nList[j*3+k]);
-						specularLightsClr(absMtx, specularity, camPos, mesh, mesh->vList[j*3+k], mesh->nList[3*j+k]);
-					}
-				}
-				GX_End();
-			}
-			break;
-		}
-		case CC_DIFF://Diffuse channel
-		{
-			for(u8 i = 0; i < nMeshes; i++)
-			{
-				SMESH * mesh = &meshes[i];
-				GX_SetArray(GX_VA_POS, mesh->vertices, 3*sizeof(f32));
-				GX_SetArray(GX_VA_NRM, mesh->normals, 3*sizeof(f32));
-				if(texChannels)
-					GX_SetArray(GX_VA_TEX0, mesh->uvSets->uvs, 2*sizeof(f32));
-				GX_Begin(GX_TRIANGLES, GX_VTXFMT0, 3*mesh->nTris);
-				for(u16 j = 0; j<mesh->nTris; j++)
-				{
-					for(u8 k = 0; k<3; k++)
-					{
-						GX_Position1x16(mesh->vList[j*3+k]);
-						GX_Normal1x16(mesh->nList[j*3+k]);
-						if(texChannels)
-						{
-							GX_TexCoord1x16(mesh->uvSets->uvList[3*j+k]);
-						}
-					}
-				}
-				GX_End();
-			}
-			break;
-		}
-		case 0://No channel
-		{
-			for(u8 i = 0; i < nMeshes; i++)
-			{
-				SMESH * mesh = &meshes[i];
-				GX_SetArray(GX_VA_POS, mesh->vertices, 3*sizeof(f32));
-				GX_SetArray(GX_VA_NRM, mesh->normals, 3*sizeof(f32));
-				if(texChannels)
-					GX_SetArray(GX_VA_TEX0, mesh->uvSets->uvs, 2*sizeof(f32));
-				GX_Begin(GX_TRIANGLES, GX_VTXFMT0, 3*mesh->nTris);
-				for(u16 j = 0; j<mesh->nTris; j++)
-				{
-					for(u8 k = 0; k<3; k++)
-					{
-						GX_Position1x16(mesh->vList[j*3+k]);
-						GX_Normal1x16(mesh->nList[j*3+k]);
-						if(texChannels)
-						{
-							GX_TexCoord1x16(mesh->uvSets->uvList[3*j+k]);
-						}
-					}
-				}
-				GX_End();
-			}
-			break;
-		}
-	}
-}
-
-void SMODEL::specularLightsClr(Mtx absMtx, f32 specularity, Vector camPos, SMESH * mesh, u16 vIdx, u16 nIdx)
-{
-	LIGHT * auxLight = mainRoot->fstLight;
-	f32 exp, cosA, r0 = 0,g0 = 0,b0 = 0,r1,g1,b1, a0;
-	u8 a, r, g, b;
-	Vector lDir, normal, tNormal, *list, vDir, pos, tPos, half;
-	while(auxLight)
-	{
-		if(auxLight->flags & F_Active)
-		{
-		r1 = auxLight->clr.r;
-		g1 = auxLight->clr.g;
-		b1 = auxLight->clr.b;
-		//Get Light Direction
-		switch(auxLight->type)
-		{
-			case LT_DIR:
-			{
-				lDir = auxLight->getPos(RT_ABS);
-				break;
-			}
-			default:
-			{
-				lDir = vector3(0,0,-1);
-			}
-		}
-		//Get Normal
-		list = (Vector*)mesh->normals;
-		tNormal = list[nIdx];
-		guVecMultiplySR(absMtx,&tNormal,&normal);
-		//Compute view direction
-		list = (Vector*)mesh->vertices;
-		tPos = list[vIdx];
-		guVecMultiply(absMtx,&tPos,&pos);
-		guVecSub(&pos, &camPos, &vDir);
-		guVecNormalize(&vDir);
-		//Compute half-angle vector
-		guVecAdd(&vDir, &lDir, &half);
-		guVecNormalize(&half);
-		if((cosA = -guVecDotProduct(&half,&normal)) > 0)
-		{
-			exp = pow(cosA, specularity);
-			r0 += r1 * exp;
-			g0 += g1 * exp;
-			b0 += b1 * exp;
-		}}
-		/////
-		auxLight = auxLight->nextL;
-	}
-	a0 = (r0+g0+b0)*0.333333f;//Have to improve this conversion
-	if(a0 > 255) a = 255; else a = (u8)a0;
-	if(r0 > 255) r = 255; else r = (u8)r0;
-	if(g0 > 255) g = 255; else g = (u8)g0;
-	if(b0 > 255) b = 255; else b = (u8)b0;
-	GX_Color4u8/*(125,125,125,125);*/(r, g, b, a);
-}
-
-void getValidRmdLine(FILE * f)
+//New implementation, faster, better.
+//-------------------------------------------------------------------------
+void getValidRmdLine(FILE * f, char * dstBuffer)
 {
 	do
 	{
-		fgets(linebuffer, LINESIZE, f);
+		fgets(dstBuffer, MAX_PATH, f);
 	}
-	while(linebuffer[0] == '#');
+	while(dstBuffer[0] == '#');
+}
+
+//-------------------------------------------------------------------------
+void TModel::log()
+{
+	char msg[MAX_PATH];
+	sprintf(msg, "model %hu %hu %hu %hu", m_nVertices, m_nNormals, m_nUVs, m_nMeshes);
+	REVConsole->write(msg);
+}
+
+//-------------------------------------------------------------------------
+TModel * loadRMD(const char * _filename, bool _loadMaterials)
+{
+	//Variables used
+	char linebuffer[MAX_PATH];
+	std::multimap<u8, TMesh*> tempBuffer;
+	FILE * f = fopen(_filename, "rt");
+	if(!f)
+	{
+		REVConsole->write("file not found");
+		return NULL;//Couldn't load
+	}
+	//Is this model binary or plain text?
+	getValidRmdLine(f, linebuffer);
+	if(linebuffer[0] == 'b')//Binaries not yet supported
+	{
+		fclose(f);
+		return NULL;
+	}
+	//If not binary, we assume text
+	getValidRmdLine(f, linebuffer);
+	if(linebuffer[0] != '6')//Only version 6
+	{
+		fclose(f);
+		return NULL;
+	}
+	//Create the model
+	TModel * model = new TModel;
+	//Get data header
+	getValidRmdLine(f, linebuffer);
+	sscanf(linebuffer, "%hu %hu %hu %hu", &model->m_nVertices, &model->m_nNormals, &model->m_nUVs, &model->m_nMeshes);
+	//Allocate memory for data
+	model->m_vertices = (f32*)memalign(32, 3*sizeof(f32)*model->m_nVertices);
+	model->m_normals = (f32*)memalign(32, 3*sizeof(f32)*model->m_nNormals);
+	model->m_uvs = (f32*)memalign(32, 3*sizeof(f32)*model->m_nUVs);
+	if(!model->m_nVertices || !model->m_nNormals || !model->m_nUVs)
+	{
+#ifdef _DEBUG
+		REVConsole->write("Error allocating memory");
+#endif
+		delete model;
+		fclose(f);
+		return NULL;
+	}
+	//Fill that data
+	//vertices
+	for(unsigned i = 0; i < model->m_nVertices; ++i)
+	{
+		getValidRmdLine(f, linebuffer);
+		sscanf(linebuffer, "v %f %f %f", &model->m_vertices[3*i+0],
+											&model->m_vertices[3*i+1],
+											&model->m_vertices[3*i+2]);
+	}
+	//normals
+	for(unsigned i = 0; i < model->m_nNormals; ++i)
+	{
+		getValidRmdLine(f, linebuffer);
+		sscanf(linebuffer, "n %f %f %f", &model->m_normals[3*i+0],
+											&model->m_normals[3*i+1],
+											&model->m_normals[3*i+2]);
+	}
+	//texture coordinates
+	for(unsigned i = 0; i < model->m_nUVs; ++i)
+	{
+		getValidRmdLine(f, linebuffer);
+		sscanf(linebuffer, "t %f %f", &model->m_uvs[2*i+0],
+											&model->m_uvs[2*i+1]);
+	}
+	//Flush memory
+	DCFlushRange(model->m_vertices, model->m_nVertices*sizeof(f32)*3);
+	DCFlushRange(model->m_normals, model->m_nNormals*sizeof(f32)*3);
+	DCFlushRange(model->m_uvs, model->m_nUVs*sizeof(f32)*2);
+#ifdef _DEBUG
+	for(u16 i = 0; i < model->m_nUVs; ++i)
+	{
+		sprintf(linebuffer,  "t %f %f", model->m_uvs[2*i], model->m_uvs[2*i+1]);
+		REVConsole->write(linebuffer);
+	}
+#endif
+	//Now parse every mesh
+	for(unsigned i = 0; i < model->m_nMeshes; ++i)
+	{
+//#ifdef NDEBUG
+		REVConsole->write("mesh loaded");
+//#endif
+		//Read the header
+		getValidRmdLine(f, linebuffer);
+		TMesh * mesh = new TMesh();
+		char material[MAX_PATH];//Unused
+		sscanf(linebuffer, "m %hu %hu %hu %s", &mesh->m_nTris,
+			&mesh->m_nQuads, &mesh->m_materialSlot, material);
+		//Allocate memory for indices
+		u16 nVerts = 3*mesh->m_nTris + 4*mesh->m_nQuads;
+		mesh->m_verts = (u16*)memalign(32, nVerts*sizeof(u16));
+		mesh->m_normals = (u16*)memalign(32, nVerts*sizeof(u16));
+		mesh->m_uvs = (u16*)memalign(32, nVerts*sizeof(u16));
+		//TODO: Test allocation succeded
+		//Load data
+		unsigned nTris = 0, nQuads = 0;
+		for(unsigned i = 0; i < nVerts;)
+		{
+			getValidRmdLine(f, linebuffer);
+			if(linebuffer[0] == '3')//Triangle
+			{
+				sscanf(linebuffer, "3 %hu/%hu/%hu %hu/%hu/%hu %hu/%hu/%hu",
+				&mesh->m_verts[nTris],&mesh->m_normals[nTris],&mesh->m_uvs[nTris],
+				&mesh->m_verts[nTris+1],&mesh->m_normals[nTris+1],&mesh->m_uvs[nTris+1],
+				&mesh->m_verts[nTris+2],&mesh->m_normals[nTris+2],&mesh->m_uvs[nTris+2]);
+				++nTris;
+				i+=3;
+			}
+			else if(linebuffer[0] == '4')//Quad
+			{
+				int ret =
+				sscanf(linebuffer, "4 %hu/%hu/%hu %hu/%hu/%hu %hu/%hu/%hu %hu/%hu/%hu",
+				&mesh->m_verts[nTris], &mesh->m_normals[nTris],&mesh->m_uvs[nTris],
+				&mesh->m_verts[nTris+1],&mesh->m_normals[nTris+1],&mesh->m_uvs[nTris+1],
+				&mesh->m_verts[nTris+2],&mesh->m_normals[nTris+2],&mesh->m_uvs[nTris+2],
+				&mesh->m_verts[nTris+3],&mesh->m_normals[nTris+3],&mesh->m_uvs[nTris+3]);
+				++nQuads;
+				i+=4;
+			}
+		}
+		//Flush memory
+		DCFlushRange(mesh->m_verts, (3*mesh->m_nTris+4*mesh->m_nQuads)*sizeof(u16));
+		DCFlushRange(mesh->m_normals, (3*mesh->m_nTris+4*mesh->m_nQuads)*sizeof(u16));
+		DCFlushRange(mesh->m_uvs, (3*mesh->m_nTris+4*mesh->m_nQuads)*sizeof(u16));
+		//Data is ready, push_back this model
+		tempBuffer.insert(pair<u8, TMesh*>(mesh->m_materialSlot, mesh));
+		sprintf(linebuffer, "v=%hu,q=%hu", mesh->m_nTris, mesh->m_nQuads);
+		REVConsole->write(linebuffer);
+	}
+	//Copy the buffer into the final vector
+	std::multimap<u8, TMesh*>::iterator iter = tempBuffer.begin();
+	model->m_vMeshes.clear();
+	for(; iter != tempBuffer.end(); ++iter)
+	{
+		model->m_vMeshes.push_back((*iter).second);
+		sprintf(linebuffer, "adress %u", (void*)(*iter).second);
+		REVConsole->write(linebuffer);
+	}
+	//close the file
+	fclose(f);
+	//And return the model
+	return model;
+}
+
+//-------------------------------------------------------------------------
+TMesh::TMesh()
+{
+	m_nTris = 0;
+	m_nQuads = 0;
+	m_materialSlot = 0;
+	//Index lists
+	m_verts = 0;
+	m_normals = 0;
+	m_uvs = 0;
+}
+
+//-------------------------------------------------------------------------
+TMesh::~TMesh()
+{//TODO: free resources
+}
+
+//-------------------------------------------------------------------------
+void TMesh::render()
+{
+	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, 3*m_nTris);
+	/*if(!done)
+	{
+		sprintf(msg, "adress %u", (void*)this);
+		REVConsole->write(msg);
+		done = true;
+	}*/
+	for(u16 j = 0; j< m_nTris; ++j)
+	{
+		for(u8 k = 0; k<3; ++k)
+		{
+			GX_Position1x16(m_verts[j*3+k]-1);
+			GX_Normal1x16(m_normals[j*3+k]-1);
+			GX_TexCoord1x16(m_uvs[3*j+k]-1);
+		}
+	}
+	GX_End();
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4*3);//To do, only one GX_Begin/End for each model
+	u16 quad0 = 3*m_nTris;
+	for(u16 j = 0; j < 3; ++j)
+	{
+		for(u8 k = 0; k<4; ++k)
+		{
+			REVGX_Position1x16(m_verts[quad0+j*4+k]-1);
+			GX_Normal1x16(m_normals[quad0+j*4+k]-1);
+			GX_TexCoord1x16(m_uvs[quad0+4*j+k]-1);
+		}
+	}
+	GX_End();
+}
+
+//-------------------------------------------------------------------------
+TModel::TModel()
+{
+	m_nMeshes = 0;
+	m_nVertices = 0;
+	m_nNormals = 0;
+	m_nUVs = 0;
+	m_vertices = NULL;
+	m_normals = NULL;
+	m_uvs = NULL;
+}
+
+//-------------------------------------------------------------------------
+TModel::~TModel()
+{
+	free(m_vertices);
+	free(m_normals);
+	free(m_uvs);
+	//Free all meshes
+}
+
+//-------------------------------------------------------------------------
+void TModel::render(std::vector<IMaterial*> _materials)
+{
+	//Set vertex descriptors
+	GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
+	GX_SetVtxDesc(GX_VA_NRM, GX_INDEX16);
+	GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX16);
+	//Set arrays
+	GX_SetArray(GX_VA_POS, m_vertices, 3*sizeof(f32));
+	GX_SetArray(GX_VA_NRM, m_normals, 3*sizeof(f32));
+	GX_SetArray(GX_VA_TEX0, m_uvs, 2*sizeof(f32));
+	//Iterate through meshes
+	s32 lastSlot = -1;
+	std::vector<TMesh*>::iterator iter = m_vMeshes.begin();
+	TTevInfo renderInfo;
+	for(; iter != m_vMeshes.end(); ++iter)
+	{
+		if((*iter)->getSlot() != lastSlot)
+		{//Load material
+			lastSlot = (*iter)->getSlot();
+			//Get material for the new slot
+			IMaterial * mat;
+			if(_materials.empty()) mat = NULL;
+			else if(((s32)_materials.capacity()) <= lastSlot) mat = _materials[0];
+			else mat = _materials[lastSlot];
+			//Adjust TEV
+			if(mat)
+				mat->setTev(renderInfo);
+			else 
+			{
+				REVConsole->write("no material");
+				return;//By now, we don't paint non-material meshes
+			}
+			//TODO: default set TEV
+		}
+		(*iter)->render();
+	}
 }

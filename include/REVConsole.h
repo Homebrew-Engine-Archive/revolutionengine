@@ -1,6 +1,6 @@
 ///////////////////////////////////
-//Technik 2009
-//Revolution Engine 0.5
+//Technik 2010
+//Revolution Engine 0.6
 ///////////////////////////////////
 //Console
 #ifndef REV_CONSOLE_H
@@ -10,6 +10,8 @@ extern u8 keyState[256];
 
 void keyboardInit(void);
 void keyboardProcess(void);
+
+class TEXT;
 
 class CONSOLE
 {
@@ -24,7 +26,7 @@ public:
 	void 	addChar			(char a);
 	void 	deleteChar		();
 	void 	clearLine		();
-	char *	getLastLine		() 										{	return lines[nLines-1]->text;	}
+	char *	getLastLine		();
 	void 	close			();
 	u8		getLineSize		()										{	return lineSize;				}
 	u8 isActive				()										{	return active;					}

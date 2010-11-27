@@ -12,12 +12,12 @@
 using namespace std;
 
 //--------------------------------------------------------------
-OBJECT::OBJECT(MODEL * _model, Vector _pos, u8 _flags):NODE(_flags)
+OBJECT::OBJECT(TModel * _model, Vector _pos, u8 _flags):NODE(_flags)
 {
 	setPos(_pos);
 	m_clr = DEFAULT_OBJECT_COLOR;
 	type = NT_OBJECT;
-	this->model = _model;
+	this->m_model = _model;
 	m_vMaterials.resize(1);
 }
 
@@ -26,7 +26,7 @@ bool OBJECT::usesAlpha()
 {
 	if(m_clr.a != 255) return true;
 	//Do we use materials?
-	return !m_vMaterials.empty();
+	return false;//!m_vMaterials.empty();
 	//TODO: materials should have a usesAlpha function,
 	//and this function should iterate through materials to see if any uses alpha
 }
@@ -40,6 +40,22 @@ void OBJECT::setMaterial(IMaterial *_material, u8 _slot)
 //--------------------------------------------------------------
 IMaterial * OBJECT::getMaterial(u8 _slot)
 {
-	if(m_vMaterials.capacity() <= _slot) return NULL;
+	if(m_vMaterials.empty()) return NULL;
+	if(m_vMaterials.capacity() <= _slot) return m_vMaterials[0];
 	return m_vMaterials[_slot];
+}
+
+//--------------------------------------------------------------
+bool OBJECT::isRenderable()
+{
+	if(!m_model)
+		return false;
+	return true;
+}
+
+//--------------------------------------------------------------
+void OBJECT::render()
+{
+	//Render my model using this material
+	m_model->render(m_vMaterials);
 }

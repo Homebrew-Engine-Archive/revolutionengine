@@ -10,7 +10,12 @@
 int main()
 {
 	REV_init();//One function inits everything (WPAD and PAD included)
-	SMODEL * floorMd = new SMODEL("RevExamples/models/plane.rms");
+	REVConsole->open();
+	TModel * ball = loadRMD("RevExamples/models/cube.rmd");
+	OBJECT * obj = new OBJECT(ball, vector3(0, 0, 0));
+	TTexture * rocksTexture = new TTexture("RevExamples/maps/plasma.png", false);
+	obj->setMaterial(rocksTexture);
+	/*SMODEL * floorMd = new SMODEL("RevExamples/models/plane.rms");
 	floorMd->scale(100000);
 	SMODEL * ballMd = new SMODEL("RevExamples/models/cube.rms");
 	SMODEL * pointMd = new SMODEL("RevExamples/models/cube.rms");
@@ -33,11 +38,11 @@ int main()
 	ball02->setSpeed(vector3(0, 100, -100), nullVector);
 	defaultCam->body = new SPHEREBD(50);
 	floor->body = new INFPLANEBD();
-	ball01->setSpeed(vector3(10,0,0), nullVector);
+	ball01->setSpeed(vector3(10,0,0), nullVector);*/
 	defaultCam->rotate(AXIS_Z, 180);
-	defaultCam->move(vector3(0,500,50), RT_ABS);
+	defaultCam->move(vector3(0,50,5), RT_ABS);
 	//Sky box
-	mainRoot->skyBox.front = loadPng("RevExamples/maps/front-sunny.png");
+	/*mainRoot->skyBox.front = loadPng("RevExamples/maps/front-sunny.png");
 	mainRoot->skyBox.back = loadPng("RevExamples/maps/back-sunny.png");
 	mainRoot->skyBox.right = loadPng("RevExamples/maps/right-sunny.png");
 	mainRoot->skyBox.left = loadPng("RevExamples/maps/left-sunny.png");
@@ -50,7 +55,7 @@ int main()
 	REVConsole->open();
 	REVConsole->write("program running");
 	REVConsole->write("program running");
-	REVConsole->write("program running");
+	REVConsole->write("program running");*/
 	//Main Loop
 	while(1)
 	{
@@ -61,7 +66,8 @@ int main()
 		{
 			REV_exit();
 		}
-		if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_B)
+		//ball->log();
+		/*if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_B)
 		{
 			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_RIGHT) defaultCam->move(vector3(500*gameTime,0,0),RT_SELF);
 			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_LEFT) defaultCam->move(vector3(-500*gameTime,0,0),RT_SELF);
@@ -85,7 +91,7 @@ int main()
 		ball01->setSpeed(vector3(sx,sy,sz),nullVector);
 		if((ball01->collide(floor) >= 0)||(ball01->collide(ball02) >= 0)||(ball01->collide(ball03) >= 0))
 			ball01->m_clr = SC_RED;
-		else ball01->m_clr = SC_WHITE;
+		else ball01->m_clr = SC_WHITE;*/
 		//After every frame
 		REV_process(NULL);//
 	}

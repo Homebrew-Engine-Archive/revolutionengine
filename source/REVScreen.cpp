@@ -64,6 +64,7 @@ void render2D(){
 			case NT_PANEL:
 			case NT_BUTTON:
 			{
+				//REVConsole->write("Render panel");
 				PANEL * p = (PANEL*)nt->target;
 				p->render();
 				break;
@@ -248,8 +249,9 @@ void PANEL::render()
 	guMtxTransApply(pnlMtx, pnlMtx, v.x, v.y, -PNL_MAX_LAYER+v.z);
 	GX_LoadPosMtxImm(pnlMtx, GX_PNMTX0);
 	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-	if(texture)
+	if(texture && texture->getTexture())
 	{
+		//REVConsole->write("Texture found");
 		GX_LoadTexObj(texture->getTexture(), GX_TEXMAP0);
 		GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
 		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_TEXC, GX_CC_C0, GX_CC_ZERO);

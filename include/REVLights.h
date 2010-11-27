@@ -7,6 +7,8 @@
 #ifndef REV_LIGHTS_H
 #define REV_LIGHTS_H
 
+#include "REVNodes.h"
+
 typedef struct _shadowParams
 {
 	u16 rsx, rsy;//resolution
@@ -24,9 +26,6 @@ private:
 	LIGHT * nextL;
 protected:
 	u8 lType;
-friend class AMODEL;
-friend class SMODEL;
-friend void render(NODE * node, Vector camPos);
 };
 
 class DLIGHT: public LIGHT//Directional Light

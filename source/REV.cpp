@@ -48,7 +48,7 @@ void ROOT::enableShadows(LIGHT * l, SDW_PARAMS shadow)
 void ROOT::shadowScene(void)
 {
 	//Viewport and perspective
-	GX_SetScissor(0,0,256,256);
+	/*GX_SetScissor(0,0,256,256);
 	GX_SetViewport(0,0,256,256,0.0,1.0f);
 	guOrtho(perspective,-100,100,-100,100,0.1f,1000);
 	GX_LoadProjectionMtx(perspective, GX_ORTHOGRAPHIC);
@@ -88,14 +88,14 @@ void ROOT::shadowScene(void)
 	u8 id = 100;
 	while(aux)
 	{
-		if(aux->target->model)
+		if(aux->target->m_model)
 		{
 			idc = rgba(id,id,id,255);
 			GX_SetTevColor(GX_TEVREG0,idc);
 			aux->target->absMtx(modelM);
 			guMtxConcat(view, modelM, modelview);
 			GX_LoadPosMtxImm(modelview, GX_PNMTX0);
-			aux->target->model->shadowRender();
+			aux->target->m_model->shadowRender();
 			id+=50;
 		}
 		aux = aux->next;
@@ -110,7 +110,7 @@ void ROOT::shadowScene(void)
 			aux->target->absMtx(modelM);
 			guMtxConcat(view, modelM, modelview);
 			GX_LoadPosMtxImm(modelview, GX_PNMTX0);
-			aux->target->model->shadowRender();
+			aux->target->m_model->shadowRender();
 			aux->target->shadowClr = idc;
 			id+=50;
 		}
@@ -124,12 +124,13 @@ void ROOT::shadowScene(void)
 	GX_PixModeSync();
 	GX_InitTexObj(&shadowTex,stencilBuffer,256,256, GX_TF_I8, GX_CLAMP,GX_CLAMP,GX_FALSE);
 	//Load it for textures map
-	GX_LoadTexObj(&shadowTex, GX_TEXMAP0);
+	GX_LoadTexObj(&shadowTex, GX_TEXMAP0);*/
 }
 
 void clasify3D(NODE * node)
 {
 	//Clasify childs
+	if(!node) return;//TODO: Make an assert from this
 	NODE * aux = node->child;
 	while(aux)
 	{
@@ -339,10 +340,22 @@ void REV_preProcess()
 void render(NODE * node, Vector camPos)
 {
 	Mtx tmp;
-	if(node->flags & F_Visible)
+	if(!node->isRenderable()) return;//Skip non-renderable nodes such as empty nodes, regions or lights
+	if(node->flags & F_Visible)//Is it visible?
 	{
+		//Set matrices
 		GX_ClearVtxDesc();
-		if(node->type == NT_OBJECT)
+		node->absMtx(modelM);
+		char msg[64];
+
+		guMtxConcat(view, modelM, modelview);
+		GX_LoadPosMtxImm(modelview, GX_PNMTX0);
+
+		//TODO: lighting?
+
+		//Render the node
+		node->render();
+		/*if(node->type == NT_OBJECT)
 		{
 			OBJECT * obj = (OBJECT*)node;
 			if(obj->model)
@@ -355,7 +368,6 @@ void render(NODE * node, Vector camPos)
 				GXLightObj lobj;
 				guVector lpos;
 
-				
 				//Set model-view matrix
 				guMtxConcat(view, modelM, modelview);
 				GX_LoadPosMtxImm(modelview, GX_PNMTX0);//Load model view matrix
@@ -394,7 +406,7 @@ void render(NODE * node, Vector camPos)
 					obj->getMaterial()->setTev(mInfo);
 					GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX16);
 					GX_SetNumTevStages(mInfo.tevStage);
-					obj->model->render(modelM, camPos, 0, 1, 1.0f);//obj->getMaterial()->specularity);*/
+					obj->model->render(modelM, camPos, 0, 1, 1.0f);//obj->getMaterial()->specularity);
 				}
 				else
 				{
@@ -411,7 +423,7 @@ void render(NODE * node, Vector camPos)
 					obj->model->render(modelM, camPos, 0, 0);
 				}
 			}
-		}
+		}*/
 	}
 }
 
@@ -427,9 +439,10 @@ void REV_process(tMapQ3 * map)
 	preWait = (f32)(ticks_to_millisecs(gettime()));
  	VIDEO_WaitVSync();
 	postWait = (f32)(ticks_to_millisecs(gettime()));
-	GPUWaitTime = 0.001 * (postWait - preWait);
+	GPUWaitTime = 0.001f * (postWait - preWait);
 	//Update physics
 	updatePhysics();
+	setBGColor(SC_BLUE);
 	//Clasify objects into solid or transparent queues
 	//This is done before everything else because this clasification is the same for every viewport
 	clasify3D(mainRoot->rootNode);
@@ -453,10 +466,7 @@ void REV_process(tMapQ3 * map)
 		//if(map)
 			//renderQ3Map(tTex->cam->getPos(), map);
 		//Now render objects
-		GX_SetCullMode(GX_CULL_BACK);
-		GX_SetTevOp(GX_TEVSTAGE0,GX_PASSCLR);
-		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
-		GX_SetNumChans(1);
+		GX_SetCullMode(GX_CULL_NONE);
 		auxT = solidQueue;
 		while(auxT)
 		{
@@ -485,6 +495,7 @@ void REV_process(tMapQ3 * map)
 		transQueue = transQueue->next;
 		free(auxT);
 	}
+	setBGColor(SC_WHITE);
 	//2D System
 	//GX_SetZMode (GX_FALSE, GX_LEQUAL, GX_TRUE);
 	GX_SetCopyFilter(rMode->aa,rMode->sample_pattern,GX_TRUE,rMode->vfilter);

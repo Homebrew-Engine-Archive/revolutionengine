@@ -9,7 +9,7 @@
 
 #define MD5_VERSION		10
 
-typedef struct REV_Joint
+/*typedef struct REV_Joint
 {
 	char name[64];
 	s16 parent;
@@ -79,6 +79,6 @@ friend void render(NODE * node);
 friend void computeNormals(AMODEL * model, AMESH * mesh);
 };
 
-void computeNormals(AMODEL * modelo, AMESH * mesh);
+void computeNormals(AMODEL * modelo, AMESH * mesh);*/
 
 #endif

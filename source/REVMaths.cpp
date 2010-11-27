@@ -5,14 +5,6 @@
 //Maths source file
 
 //External header files
-#include <cstdio>
-#include <stdlib.h>
-#include <ogcsys.h>
-#include <gccore.h>
-#include <math.h>
-#include <sys/dir.h>
-#include <sys/statvfs.h>
-#include <unistd.h>
 
 #include "REVMaths.h"
 

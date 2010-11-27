@@ -7,64 +7,66 @@
 #ifndef REV_MODELS_H
 #define REV_MODELS_H
 
-class UVSET
+//New implementation, better, more efficient and powerfull
+//Header files//header files
+#include <cstdio>
+#include <stdlib.h>
+#include <string.h>
+#include <malloc.h>
+#include <ogcsys.h>
+#include <gccore.h>
+#include <math.h>
+#include <unistd.h>
+
+#include <vector>
+
+#include "REVUtils.h"
+
+//Forward declarations
+class IMaterial;
+class TModel;
+
+class TMesh
 {
 public:
-	f32 * uvs;
-	u16 * uvList;
-	u16 nUVs;
-};
-
-class SMESH//Static mesh, no animations
-{
-public:
-	f32		*	vertices;
-	f32		*	normals;
-	UVSET	*	uvSets;
-	
-	u16		*	vList;
-	u16		*	nList;
-
-	u16			nVertices;
-	u16			nNormals;
-	u16			nTris;
-	u16			nQuads;
-};
-
-class MODEL
-{
-public:
-	u8 flags;
-	u8 getType();
-	virtual void scale(f32 factor)=0;
-	virtual void scale(Vector factor)=0;
+	TMesh();
+	~TMesh();
+	void		render();
+	u8			getSlot()	{ return m_materialSlot; }
 protected:
-	u8 nMeshes;
-	u8 nUVSets;
-	u8 type;
-private:
-	virtual void render(Mtx absMtx, Vector camPos, u8 clrChannels, u8 texChannels, f32 specularity = 1.0f) = 0;
-	virtual void shadowRender()=0;
-friend void render(NODE * node, Vector camPos);
-friend class ROOT;
+	u16		*	m_verts;//Indices
+	u16		*	m_normals;//Indices
+	u16		*	m_uvs;//Indices
+	
+	u16			m_nTris;
+	u16			m_nQuads;
+
+	u16			m_materialSlot;
+friend TModel * loadRMD(const char * filename, bool loadMaterials);
 };
 
-class SMODEL:public MODEL
+class TModel
 {
 public:
-	SMODEL(const char * fileName = NULL, u8 format = FF_RMS);
-	~SMODEL();
-	void	scale			(f32 factor);
-	void	scale			(Vector factor);
-	f32		getRadius		();
-	Vector	getCenter		();
+	TModel		();
+	~TModel		();
+	void		render		(std::vector<IMaterial*> materials);
+	void		log			();
 private:
-	SMESH * meshes;
-	void	render			(Mtx absMtx, Vector camPos, u8 clrChannels = 0, u8 texChannels = 0, f32 specularity = 1.0f);
-	void	specularLightsClr(Mtx absMtx, f32 specularity, Vector camPos, SMESH * mesh, u16 vIdx, u16 nIdx);
-	void	shadowRender	();
-friend void render			(NODE * node);
-friend class ROOT;
+	std::vector<TMesh*> m_vMeshes;
+protected:
+	f32		*	m_vertices;
+	f32		*	m_normals;
+	f32		*	m_uvs;
+
+	u16			m_nVertices;
+	u16			m_nNormals;
+	u16			m_nUVs;
+private:
+	u16			m_nMeshes;
+friend TModel * loadRMD(const char * filename, bool loadMaterials);
 };
+
+TModel * loadRMD(const char * filename, bool loadMaterials = false);
 
 #endif

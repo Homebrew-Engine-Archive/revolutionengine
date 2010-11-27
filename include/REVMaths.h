@@ -1,12 +1,13 @@
 ///////////////////////////////////
-//Technik 2009
-//Revolution Engine 0.5
+//Technik 2009-2010
+//Revolution Engine
 ///////////////////////////////////
 //Maths header file
 
 #ifndef REV_MATHS_H
 #define REV_MATHS_H
 
+#include "REVExternal.h"
 #include "REVUtils.h"
 
 typedef f32	Mtx23[2][3];//2D matrix

@@ -165,7 +165,7 @@ void keyboardProcess(void)
 
 CONSOLE::CONSOLE()
 {
-	nLines = 10;
+	nLines = 15;
 	lineSize = 64;
 	fontSize = 16;
 	writePos = 0;
@@ -175,7 +175,7 @@ CONSOLE::CONSOLE()
 	lines = (TEXT**)malloc(nLines*sizeof(TEXT*));
 	for(u8 i = 0; i < nLines; i++)
 	{
-		lines[i] = new TEXT(fontSize, vector3(50, 50+(fontSize+4)*(1+i), 10), lineSize, SC_GREEN, 0);
+		lines[i] = new TEXT(fontSize, vector3(50, 50+(fontSize+4)*(1+i), 10), lineSize, SC_BLACK, 0);
 		lines[i]->text[0]='\0';
 	}
 }
@@ -247,4 +247,9 @@ void CONSOLE::deleteChar()
 		writePos--;
 		lines[nLines-1]->text[writePos] = '\0';
 	}
+}
+
+char * CONSOLE::getLastLine()
+{
+	return lines[nLines-1]->text;
 }

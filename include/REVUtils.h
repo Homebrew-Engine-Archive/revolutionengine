@@ -1,8 +1,8 @@
 ///////////////////////////////////
 //Technik 2009
-//Revolution Engine 0.5
+//Revolution Engine
 ///////////////////////////////////
-//Main Header file
+//Useful header file, contains external dependencies
 #ifndef REV_UTILS_H
 #define REV_UTILS_H
 
