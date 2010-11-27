@@ -9,9 +9,10 @@
 #include "REVMaterials.h"
 #include "REVLights.h"
 
-#include "REVConsole.h"
+//#include "REVConsole.h"
 
 #include "REV.h"
+#include "REVGXWrappers.h"
 
 #include "REVConfig.h"
 
