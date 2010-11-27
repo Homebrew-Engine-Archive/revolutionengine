@@ -40,7 +40,7 @@ int main()
 	floor->body = new INFPLANEBD();
 	ball01->setSpeed(vector3(10,0,0), nullVector);*/
 	defaultCam->rotate(AXIS_Z, 180);
-	defaultCam->move(vector3(0,50,5), RT_ABS);
+	defaultCam->move(vector3(0,20,2), RT_ABS);
 	//Sky box
 	/*mainRoot->skyBox.front = loadPng("RevExamples/maps/front-sunny.png");
 	mainRoot->skyBox.back = loadPng("RevExamples/maps/back-sunny.png");

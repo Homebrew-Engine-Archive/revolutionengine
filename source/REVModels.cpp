@@ -9,8 +9,6 @@
 #include "REVMaterials.h"
 #include "REVLights.h"
 
-//#include "REVConsole.h"
-
 #include "REV.h"
 #include "REVGXWrappers.h"
 
@@ -135,7 +133,7 @@ TModel * loadRMD(const char * _filename, bool _loadMaterials)
 		mesh->m_uvs = (u16*)memalign(32, nVerts*sizeof(u16));
 		//TODO: Test allocation succeded
 		//Load data
-		unsigned nTris = 0, nQuads = 0;
+		unsigned nTris = 0, nQuads = 0, quad0 = 3*mesh->m_nTris;
 		for(unsigned i = 0; i < nVerts;)
 		{
 			getValidRmdLine(f, linebuffer);
@@ -150,12 +148,11 @@ TModel * loadRMD(const char * _filename, bool _loadMaterials)
 			}
 			else if(linebuffer[0] == '4')//Quad
 			{
-				int ret =
 				sscanf(linebuffer, "4 %hu/%hu/%hu %hu/%hu/%hu %hu/%hu/%hu %hu/%hu/%hu",
-				&mesh->m_verts[nTris], &mesh->m_normals[nTris],&mesh->m_uvs[nTris],
-				&mesh->m_verts[nTris+1],&mesh->m_normals[nTris+1],&mesh->m_uvs[nTris+1],
-				&mesh->m_verts[nTris+2],&mesh->m_normals[nTris+2],&mesh->m_uvs[nTris+2],
-				&mesh->m_verts[nTris+3],&mesh->m_normals[nTris+3],&mesh->m_uvs[nTris+3]);
+				&mesh->m_verts[quad0+4*nQuads], &mesh->m_normals[quad0+4*nQuads],&mesh->m_uvs[quad0+4*nQuads],
+				&mesh->m_verts[quad0+4*nQuads+1],&mesh->m_normals[quad0+4*nQuads+1],&mesh->m_uvs[quad0+4*nQuads+1],
+				&mesh->m_verts[quad0+4*nQuads+2],&mesh->m_normals[quad0+4*nQuads+2],&mesh->m_uvs[quad0+4*nQuads+2],
+				&mesh->m_verts[quad0+4*nQuads+3],&mesh->m_normals[quad0+4*nQuads+3],&mesh->m_uvs[quad0+4*nQuads+3]);
 				++nQuads;
 				i+=4;
 			}
@@ -166,7 +163,7 @@ TModel * loadRMD(const char * _filename, bool _loadMaterials)
 		DCFlushRange(mesh->m_uvs, (3*mesh->m_nTris+4*mesh->m_nQuads)*sizeof(u16));
 		//Data is ready, push_back this model
 		tempBuffer.insert(pair<u8, TMesh*>(mesh->m_materialSlot, mesh));
-		sprintf(linebuffer, "v=%hu,q=%hu", mesh->m_nTris, mesh->m_nQuads);
+		sprintf(linebuffer, "t=%hu,q=%hu", mesh->m_nTris, mesh->m_nQuads);
 		REVConsole->write(linebuffer);
 	}
 	//Copy the buffer into the final vector
@@ -175,8 +172,8 @@ TModel * loadRMD(const char * _filename, bool _loadMaterials)
 	for(; iter != tempBuffer.end(); ++iter)
 	{
 		model->m_vMeshes.push_back((*iter).second);
-		sprintf(linebuffer, "adress %u", (void*)(*iter).second);
-		REVConsole->write(linebuffer);
+		//sprintf(linebuffer, "adress %u", (void*)(*iter).second);
+		//REVConsole->write(linebuffer);
 	}
 	//close the file
 	fclose(f);
@@ -205,12 +202,6 @@ TMesh::~TMesh()
 void TMesh::render()
 {
 	GX_Begin(GX_TRIANGLES, GX_VTXFMT0, 3*m_nTris);
-	/*if(!done)
-	{
-		sprintf(msg, "adress %u", (void*)this);
-		REVConsole->write(msg);
-		done = true;
-	}*/
 	for(u16 j = 0; j< m_nTris; ++j)
 	{
 		for(u8 k = 0; k<3; ++k)
@@ -221,13 +212,13 @@ void TMesh::render()
 		}
 	}
 	GX_End();
-	GX_Begin(GX_QUADS, GX_VTXFMT0, 4*3);//To do, only one GX_Begin/End for each model
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4*m_nQuads);//To do, only one GX_Begin/End for each model
 	u16 quad0 = 3*m_nTris;
-	for(u16 j = 0; j < 3; ++j)
+	for(u16 j = 0; j < m_nQuads; ++j)
 	{
 		for(u8 k = 0; k<4; ++k)
 		{
-			REVGX_Position1x16(m_verts[quad0+j*4+k]-1);
+			GX_Position1x16(m_verts[quad0+j*4+k]-1);
 			GX_Normal1x16(m_normals[quad0+j*4+k]-1);
 			GX_TexCoord1x16(m_uvs[quad0+4*j+k]-1);
 		}
@@ -289,8 +280,19 @@ void TModel::render(std::vector<IMaterial*> _materials)
 				REVConsole->write("no material");
 				return;//By now, we don't paint non-material meshes
 			}
-			//TODO: default set TEV
+			//TODO: default TEV configuration
 		}
 		(*iter)->render();
 	}
+	/*static bool printed = false;
+	if(!printed)
+	{
+		char msg[48];
+		for(u16 i = 0; i < m_nVertices; ++i)
+		{
+			sprintf(msg, "vtx %f %f %f", m_vertices[3*i], m_vertices[3*i+1], m_vertices[3*i+2]);
+			REVConsole->write(msg);
+		}
+		printed = true;
+	}*/
 }
