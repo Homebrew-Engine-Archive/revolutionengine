@@ -13,10 +13,10 @@
 #include "REVGXWrappers.h"
 
 #include "REVConfig.h"
+#include "REVMaths.h"
 
 #include <map>
 
-//New implementation, faster, better.
 //-------------------------------------------------------------------------
 void getValidRmdLine(FILE * f, char * dstBuffer)
 {
@@ -25,14 +25,6 @@ void getValidRmdLine(FILE * f, char * dstBuffer)
 		fgets(dstBuffer, MAX_PATH, f);
 	}
 	while(dstBuffer[0] == '#');
-}
-
-//-------------------------------------------------------------------------
-void TModel::log()
-{
-	char msg[MAX_PATH];
-	sprintf(msg, "model %hu %hu %hu %hu", m_nVertices, m_nNormals, m_nUVs, m_nMeshes);
-	REVConsole->write(msg);
 }
 
 //-------------------------------------------------------------------------
@@ -248,6 +240,50 @@ TModel::~TModel()
 }
 
 //-------------------------------------------------------------------------
+TBBox&	TModel::getBBox() const
+{
+	Vector max;
+	Vector min;
+	Vector * verts = reinterpret_cast<Vector*>(m_vertices);
+	min = max = verts[0];
+	for(u16 i = 0; i < m_nVertices; ++i)
+	{
+		Vector v = verts[i];
+		max.x = revMax(v.x, max.x);
+		max.y = revMax(v.y, max.y);
+		max.z = revMax(v.z, max.z);
+		min.x = revMin(v.x, min.x);
+		min.y = revMin(v.y, min.y);
+		min.z = revMin(v.z, min.z);
+	}
+	TBBox ret;
+	ret.adjust(max);
+	ret.adjust(min);
+}
+
+//-------------------------------------------------------------------------
+void TModel::scale(f32 _factor)
+{
+	u32 nVerts = m_nVertices*3;
+	for(u32 i = 0; i < nVerts; ++i)
+	{
+		m_vertices[i] *= _factor;
+	}
+}
+
+//-------------------------------------------------------------------------
+void TModel::scale(const Vector& _factor)
+{
+	Vector * verts = reinterpret_cast<Vector*>(m_vertices);
+	for(u16 i = 0; i < m_nVertices; ++i)
+	{
+		verts[i].x *= _factor.x;
+		verts[i].y *= _factor.y;
+		verts[i].z *= _factor.z;
+	}
+}
+
+//-------------------------------------------------------------------------
 void TModel::render(std::vector<IMaterial*> _materials)
 {
 	//Set vertex descriptors
@@ -284,15 +320,4 @@ void TModel::render(std::vector<IMaterial*> _materials)
 		}
 		(*iter)->render();
 	}
-	/*static bool printed = false;
-	if(!printed)
-	{
-		char msg[48];
-		for(u16 i = 0; i < m_nVertices; ++i)
-		{
-			sprintf(msg, "vtx %f %f %f", m_vertices[3*i], m_vertices[3*i+1], m_vertices[3*i+2]);
-			REVConsole->write(msg);
-		}
-		printed = true;
-	}*/
 }

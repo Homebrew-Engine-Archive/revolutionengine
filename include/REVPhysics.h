@@ -6,7 +6,22 @@
 #ifndef REV_PHYSICS_H
 #define REV_PHYSICS_H
 
-void updatePhysics();
+class TBBox//Bounding box
+{
+public:
+	TBBox()					{	reset();		}
+	bool			isValid		()const	{	return valid;	}
+	const Vector&	getMax		()const	{	return max;		}
+	const Vector&	getMin		()const	{	return min;		}
+	const Vector&	getSize		()const;
+	const Vector&	getCenter	()const;
+	void			reset		();
+	void			adjust		(Vector& v);
+private:
+	Vector		max;
+	Vector		min;
+	bool		valid;
+};
 
 class BODY
 {
@@ -34,5 +49,7 @@ public:
 	f32 getRadius();// {return -1;}//Infinite radius
 	void setInertia(Mtx dst, f32 mass);
 };
+
+void updatePhysics();
 
 #endif

@@ -40,4 +40,7 @@ void mtx23VecMultiplySR(f32 x0, f32 y0, Mtx23 m, f32 * x, f32 * y);
 
 f32 fastInverseSqrt(f32 a);
 
+#define revMax(a, b)	( (a>b) ? a : b )
+#define revMin(a, b)	( (a<b) ? a : b )
+
 #endif

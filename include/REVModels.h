@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "REVUtils.h"
+#include "REVPhysics.h"
 
 //Forward declarations
 class IMaterial;
@@ -50,8 +51,13 @@ class TModel
 public:
 	TModel		();
 	~TModel		();
-	void		render		(std::vector<IMaterial*> materials);
-	void		log			();
+	const Vector&	getCenter	()const { return getBBox().getCenter(); }
+	const Vector&	getSize		()const { return getBBox().getSize(); }
+	TBBox&			getBBox		()const;
+	void			scale		(f32 _factor);
+	void			scale		(const Vector& _factor);
+	
+	void			render		(std::vector<IMaterial*> materials);
 private:
 	std::vector<TMesh*> m_vMeshes;
 protected:
