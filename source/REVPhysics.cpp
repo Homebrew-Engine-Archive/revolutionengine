@@ -36,12 +36,12 @@ typedef struct _tracker{
 //Global internal data
 TRACKER * queue = NULL;
 
-Vector& TBBox::getSize()const
+const Vector& TBBox::getSize()const
 {
 	return vector3((max.x-min.x)*0.5f,(max.y-min.y)*0.5f,(max.z-min.z)*0.5f);
 }
 
-Vector& TBBox::getCenter()const
+const Vector& TBBox::getCenter()const
 {
 	return vector3((max.x+min.x)*0.5f,(max.y+min.y)*0.5f,(max.z+min.z)*0.5f);
 }
@@ -71,7 +71,7 @@ void TBBox::adjust(Vector& v)
 		min = v;
 		valid = true;
 	}
-
+}
 
 void updatePhysicState()
 {

@@ -132,9 +132,9 @@ TModel * loadRMD(const char * _filename, bool _loadMaterials)
 			if(linebuffer[0] == '3')//Triangle
 			{
 				sscanf(linebuffer, "3 %hu/%hu/%hu %hu/%hu/%hu %hu/%hu/%hu",
-				&mesh->m_verts[nTris],&mesh->m_normals[nTris],&mesh->m_uvs[nTris],
-				&mesh->m_verts[nTris+1],&mesh->m_normals[nTris+1],&mesh->m_uvs[nTris+1],
-				&mesh->m_verts[nTris+2],&mesh->m_normals[nTris+2],&mesh->m_uvs[nTris+2]);
+				&mesh->m_verts[3*nTris],&mesh->m_normals[3*nTris],&mesh->m_uvs[3*nTris],
+				&mesh->m_verts[3*nTris+1],&mesh->m_normals[3*nTris+1],&mesh->m_uvs[3*nTris+1],
+				&mesh->m_verts[3*nTris+2],&mesh->m_normals[3*nTris+2],&mesh->m_uvs[3*nTris+2]);
 				++nTris;
 				i+=3;
 			}
@@ -313,10 +313,13 @@ void TModel::render(std::vector<IMaterial*> _materials)
 				mat->setTev(renderInfo);
 			else 
 			{
-				REVConsole->write("no material");
-				return;//By now, we don't paint non-material meshes
+				//Default tev configuration
+				GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC);
+				GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+				GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+				GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ADDHALF, GX_CS_SCALE_2, GX_ENABLE, GX_TEVPREV);
 			}
-			//TODO: default TEV configuration
+			GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLORNULL);
 		}
 		(*iter)->render();
 	}

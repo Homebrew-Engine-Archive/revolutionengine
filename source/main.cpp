@@ -11,10 +11,14 @@ int main()
 {
 	REV_init();//One function inits everything (WPAD and PAD included)
 	REVConsole->open();
-	TModel * ball = loadRMD("RevExamples/models/cube.rmd");
-	OBJECT * obj = new OBJECT(ball, vector3(0, 0, 0));
+	TModel * bigBall = loadRMD("RevExamples/models/sphere.rmd");
+	TModel * littleBall = loadRMD("RevExamples/models/sphere.rmd");
+	littleBall->scale(10);
+	OBJECT * little = new OBJECT(littleBall, vector3(-8, 0, 0));
+	OBJECT * big = new OBJECT(bigBall, vector3(8, 0, 0));
 	TTexture * rocksTexture = new TTexture("RevExamples/maps/plasma.png", false);
-	obj->setMaterial(rocksTexture);
+	little->setMaterial(rocksTexture);
+	//big->setMaterial(rocksTexture);
 	/*SMODEL * floorMd = new SMODEL("RevExamples/models/plane.rms");
 	floorMd->scale(100000);
 	SMODEL * ballMd = new SMODEL("RevExamples/models/cube.rms");
@@ -67,7 +71,7 @@ int main()
 			REV_exit();
 		}
 		//ball->log();
-		/*if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_B)
+		if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_B)
 		{
 			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_RIGHT) defaultCam->move(vector3(500*gameTime,0,0),RT_SELF);
 			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_LEFT) defaultCam->move(vector3(-500*gameTime,0,0),RT_SELF);
@@ -82,7 +86,7 @@ int main()
 			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_DOWN) defaultCam->move(vector3(0,-100*gameTime,0),RT_SELF);
 		}
 		//Updates
-		if(keyState[KEY_H]) screenShot("SunnyDay.png");
+		/*if(keyState[KEY_H]) screenShot("SunnyDay.png");
 		sx = sy = sz = 0;
 		if(keyState[KEY_W]) sz+=100;
 		if(keyState[KEY_S]) sz-=100;
