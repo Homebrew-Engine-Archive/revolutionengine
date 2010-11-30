@@ -109,9 +109,6 @@ TModel * loadRMD(const char * _filename, bool _loadMaterials)
 	//Now parse every mesh
 	for(unsigned i = 0; i < model->m_nMeshes; ++i)
 	{
-//#ifdef NDEBUG
-		REVConsole->write("mesh loaded");
-//#endif
 		//Read the header
 		getValidRmdLine(f, linebuffer);
 		TMesh * mesh = new TMesh();
@@ -155,8 +152,6 @@ TModel * loadRMD(const char * _filename, bool _loadMaterials)
 		DCFlushRange(mesh->m_uvs, (3*mesh->m_nTris+4*mesh->m_nQuads)*sizeof(u16));
 		//Data is ready, push_back this model
 		tempBuffer.insert(pair<u8, TMesh*>(mesh->m_materialSlot, mesh));
-		sprintf(linebuffer, "t=%hu,q=%hu", mesh->m_nTris, mesh->m_nQuads);
-		REVConsole->write(linebuffer);
 	}
 	//Copy the buffer into the final vector
 	std::multimap<u8, TMesh*>::iterator iter = tempBuffer.begin();
@@ -164,8 +159,6 @@ TModel * loadRMD(const char * _filename, bool _loadMaterials)
 	for(; iter != tempBuffer.end(); ++iter)
 	{
 		model->m_vMeshes.push_back((*iter).second);
-		//sprintf(linebuffer, "adress %u", (void*)(*iter).second);
-		//REVConsole->write(linebuffer);
 	}
 	//close the file
 	fclose(f);
@@ -269,6 +262,7 @@ void TModel::scale(f32 _factor)
 	{
 		m_vertices[i] *= _factor;
 	}
+	DCFlushRange(m_vertices, m_nVertices*sizeof(f32)*3);
 }
 
 //-------------------------------------------------------------------------
@@ -281,10 +275,11 @@ void TModel::scale(const Vector& _factor)
 		verts[i].y *= _factor.y;
 		verts[i].z *= _factor.z;
 	}
+	DCFlushRange(m_vertices, m_nVertices*sizeof(f32)*3);
 }
 
 //-------------------------------------------------------------------------
-void TModel::render(std::vector<IMaterial*> _materials)
+void TModel::render(std::vector<IMaterial*> _materials, GXColor& _clr, u32 _lightMask)
 {
 	//Set vertex descriptors
 	GX_SetVtxDesc(GX_VA_POS, GX_INDEX16);
@@ -310,16 +305,32 @@ void TModel::render(std::vector<IMaterial*> _materials)
 			else mat = _materials[lastSlot];
 			//Adjust TEV
 			if(mat)
+			{
+				if(mat->usesLight())
+				{
+					GX_SetChanCtrl(GX_COLOR0,GX_ENABLE, GX_SRC_REG, GX_SRC_REG, renderInfo.lightMask, GX_DF_CLAMP, GX_AF_SPOT);
+				}
+				else
+				{
+					GX_SetChanCtrl(GX_COLOR0,GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHTNULL, GX_DF_CLAMP, GX_AF_SPOT);
+				}
 				mat->setTev(renderInfo);
+				GX_SetNumTevStages(renderInfo.tevStage);
+			}
 			else 
 			{
 				//Default tev configuration
+				GX_SetChanCtrl(GX_COLOR0,GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHTNULL, GX_DF_CLAMP, GX_AF_SPOT);
+				GX_SetChanCtrl(GX_ALPHA0,GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHTNULL, GX_DF_NONE, GX_AF_NONE);
+				GX_SetChanMatColor(GX_COLOR0A0, _clr);
+				GX_SetChanAmbColor(GX_COLOR0, SC_BLACK);
 				GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC);
 				GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
 				GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
 				GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ADDHALF, GX_CS_SCALE_2, GX_ENABLE, GX_TEVPREV);
+				GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+				GX_SetNumTevStages(1);
 			}
-			GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLORNULL);
 		}
 		(*iter)->render();
 	}

@@ -25,7 +25,7 @@ public:
 	GXColor		m_clr;
 	virtual bool	isRenderable();
 protected:
-	virtual void render();
+	virtual void render(u32 _lightMask);
 private:
 	vector<IMaterial*>	m_vMaterials;
 	GXColor shadowClr;

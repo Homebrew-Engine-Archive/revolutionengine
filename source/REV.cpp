@@ -344,86 +344,36 @@ void render(NODE * node, Vector camPos)
 	if(node->flags & F_Visible)//Is it visible?
 	{
 		//Set matrices
+		Mtx aux, inv;
 		GX_ClearVtxDesc();
 		node->absMtx(modelM);
 		char msg[64];
 
 		guMtxConcat(view, modelM, modelview);
-		GX_LoadPosMtxImm(modelview, GX_PNMTX0);
+		GX_LoadPosMtxImm(modelview, GX_PNMTX0);//Load model view matrix
+		guMtxInverse(modelview, tmp);
+		guMtxTranspose(tmp,inv);
+		GX_LoadNrmMtxImm(inv, GX_PNMTX0);//Load normal matrix
 
-		//TODO: lighting?
-
-		//Render the node
-		node->render();
-		/*if(node->type == NT_OBJECT)
+		//TODO: Better lighting (multiple lights)
+		LIGHT * l = mainRoot->getFirstLight();
+		GXLightObj lObj;
+		if(l)
 		{
-			OBJECT * obj = (OBJECT*)node;
-			if(obj->model)
-			{
-				u8 clrChannels = CC_DIFF, texChannels = 0;
-				//Set world mtx
-				node->absMtx(modelM);
-				Mtx aux, inv;
-				//Light
-				GXLightObj lobj;
-				guVector lpos;
-
-				//Set model-view matrix
-				guMtxConcat(view, modelM, modelview);
-				GX_LoadPosMtxImm(modelview, GX_PNMTX0);//Load model view matrix
-				guMtxInverse(modelview, tmp);
-				guMtxTranspose(tmp,inv);
-				GX_LoadNrmMtxImm(inv, GX_PNMTX0);//Load normal matrix
-				
-				guMtxInverse(view, tmp);
-				guMtxTranspose(tmp, aux);
-				
-				LIGHT * auxL = mainRoot->fstLight;
-				u32 lM = GX_LIGHT0;
-				u32 endM = 0;
-				while(auxL)
-				{//We assume directional lights
-					lpos = auxL->getPos();
-					lpos.x*=1000000;
-					lpos.y*=1000000;
-					lpos.z*=1000000;
-					guVecMultiply(view, &lpos, &lpos);
-					
-					GX_InitLightPos(&lobj,lpos.x,lpos.y,lpos.z);
-					GX_InitLightAttn(&lobj, 1.0f,0.0f,0.0f,1.0f,0.0f,0.0f);
-					GX_InitLightSpot(&lobj,0.0f,GX_SP_OFF);
-					GX_InitLightColor(&lobj,auxL->clr);
-					GX_LoadLightObj(&lobj,lM);
-					
-					endM+=lM;
-					lM = lM << 1;
-					
-					auxL = auxL->nextL;
-				}
-				if(!obj->m_vMaterials.empty())
-				{
-					TTevInfo mInfo;
-					obj->getMaterial()->setTev(mInfo);
-					GX_SetVtxDesc(GX_VA_TEX0, GX_INDEX16);
-					GX_SetNumTevStages(mInfo.tevStage);
-					obj->model->render(modelM, camPos, 0, 1, 1.0f);//obj->getMaterial()->specularity);
-				}
-				else
-				{
-					GX_SetChanCtrl(GX_COLOR0A0,GX_ENABLE, GX_SRC_REG, GX_SRC_REG, endM, GX_DF_CLAMP, GX_AF_SPOT);
-					GX_SetChanMatColor(GX_COLOR0A0, obj->m_clr);
-					GX_SetChanAmbColor(GX_COLOR0A0, rgba(100,100,100,0));
-					GX_SetNumChans(1);
-					GX_SetNumTevStages(1);
-					GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_RASC, GX_CC_RASA, GX_CC_ZERO);
-					GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
-					GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
-					GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ADDHALF, GX_CS_SCALE_2, GX_ENABLE, GX_TEVPREV);
-					GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);			
-					obj->model->render(modelM, camPos, 0, 0);
-				}
-			}
-		}*/
+			Vector lpos = l->getPos();
+			lpos.x*=1000000;
+			lpos.y*=1000000;
+			lpos.z*=1000000;
+			guVecMultiply(view, &lpos, &lpos);
+			
+			GX_InitLightPos(&lObj,lpos.x,lpos.y,lpos.z);
+			GX_InitLightAttn(&lObj, 1.0f,0.0f,0.0f,1.0f,0.0f,0.0f);
+			GX_InitLightSpot(&lObj,0.0f,GX_SP_OFF);
+			GX_InitLightColor(&lObj,SC_WHITE);
+			GX_LoadLightObj(&lObj,GX_LIGHT0);
+		}
+		//Render the node
+		node->render(GX_LIGHT0);
 	}
 }
 

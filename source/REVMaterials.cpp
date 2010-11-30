@@ -17,6 +17,7 @@ TTevInfo::TTevInfo()
 	texMap		= GX_TEXMAP0;
 	texCoords	= GX_TEXCOORD0;
 	outReg		= GX_TEVPREV;
+	lightMask	= GX_LIGHT0;
 	m_lockedRegs	= 0;//No locked registries
 }
 //------------------------------------------------------------
@@ -80,10 +81,13 @@ void TTexture::setTev(TTevInfo& _info)
 {
 	if(!m_pGXTexture) return;
 	//TODO: support coordinate generation
+	GX_SetChanCtrl(GX_ALPHA0,GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHTNULL, GX_DF_NONE, GX_AF_NONE);
+	GX_SetChanMatColor(GX_COLOR0A0, SC_WHITE);
+	GX_SetChanAmbColor(GX_COLOR0, SC_BLACK);
 	//Load the map
 	if(m_pGXTexture)
 	GX_LoadTexObj(m_pGXTexture, GX_TEXMAP0);
-	GX_SetTevColorIn(_info.tevStage, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+	GX_SetTevColorIn(_info.tevStage, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
 	GX_SetTevColorOp(_info.tevStage, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, _info.outReg);
 	if(m_alpha)
 	{
@@ -95,7 +99,7 @@ void TTexture::setTev(TTevInfo& _info)
 		GX_SetTevAlphaIn(_info.tevStage, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
 		GX_SetTevAlphaOp(_info.tevStage, GX_TEV_ADD, GX_TB_ADDHALF, GX_CS_SCALE_2, GX_ENABLE, _info.outReg);
 	}
-	GX_SetTevOrder(_info.tevStage, _info.texCoords, _info.texMap, GX_COLORNULL);
+	GX_SetTevOrder(_info.tevStage, _info.texCoords, _info.texMap, GX_COLOR0A0);
 	++_info.tevStage;
 	++_info.texMap;
 	++_info.texCoords;
@@ -203,6 +207,24 @@ TDiffuseMaterial::TDiffuseMaterial(IMaterial * _baseMaterial)
 //------------------------------------------------------------
 void TDiffuseMaterial::setTev(TTevInfo& _info)
 {
+	if(m_pBaseMaterial)
+	{
+
+		m_pBaseMaterial->setTev(_info);
+	}
+	else
+	{
+		//Default tev configuration
+		GX_SetChanCtrl(GX_ALPHA0,GX_DISABLE, GX_SRC_REG, GX_SRC_REG, GX_LIGHTNULL, GX_DF_NONE, GX_AF_NONE);
+		GX_SetChanMatColor(GX_COLOR0A0, SC_WHITE);
+		GX_SetChanAmbColor(GX_COLOR0, SC_BLACK);
+		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_RASC);
+		GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		GX_SetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO);
+		GX_SetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ADDHALF, GX_CS_SCALE_2, GX_ENABLE, GX_TEVPREV);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		++_info.tevStage;
+	}
 }
 
 //------------------------------------------------------------

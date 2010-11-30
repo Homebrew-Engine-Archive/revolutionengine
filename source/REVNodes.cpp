@@ -398,7 +398,7 @@ void NODE::setSpeed(Vector linear, Vector angular)
 }
 
 //-------------------------------------------------------------------------------------
-void NODE::render()
+void NODE::render(u32 _lightMask)
 {
 	//TODO: Add debug code to draw xyz axes
 }

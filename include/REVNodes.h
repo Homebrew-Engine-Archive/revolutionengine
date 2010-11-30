@@ -20,7 +20,7 @@ public:
 	void	attach			(NODE * parent, u8 coord = RT_ABS);
 	void	addChild		(NODE * child, u8 coord = RT_ABS);//Keep abs coordinates?
 	void	deattach		(u8 coord = RT_ABS);
-	void	releaseChildren(u8 coord = RT_ABS);
+	void	releaseChildren	(u8 coord = RT_ABS);
 	void	clearChildren	();
 	NODE	* getChild		()										{	return child;		}
 	NODE	* getNext		()										{	return next;		}
@@ -47,7 +47,7 @@ public:
 	virtual bool	isRenderable()									{	return false;		}
 	void	* custom;
 protected:
-	virtual void render	();
+	virtual void render	(u32 lightMask);
 	//Physics
 	f32 mass;
 	Mtx inertia;

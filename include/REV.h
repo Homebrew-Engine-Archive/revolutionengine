@@ -47,6 +47,7 @@ public:
 	ROOT();
 	void init(f32 w, f32 h);
 	void enableShadows(LIGHT * l, SDW_PARAMS shadow);
+	LIGHT * getFirstLight() { return fstLight; }
 	u8 shadowsEnabled();
 private:
 	std::multimap<CAMERA*, TRender2Texture*> m_Render2Textures;
@@ -65,8 +66,6 @@ friend class NODE;
 friend class N2D;
 friend class HTCAMERA;
 friend class LIGHT;
-friend class AMODEL;//Temporary
-friend class SMODEL;//Temporary
 friend class TRender2Texture;
 friend class BUTTON;
 friend void REV_preProcess(void);

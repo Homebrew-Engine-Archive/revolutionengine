@@ -32,10 +32,11 @@ public:
 	void	lock		(u8 registries);
 	void	unlock		(u8 registries);
 	u8		getFreeReg	();//Returns the first unused registry, GX_TEVPREV is the last one
-	u8 tevStage;
-	u8 texMap;
-	u8 texCoords;
-	u8 outReg;
+	u8	tevStage;
+	u8	texMap;
+	u8	texCoords;
+	u8	outReg;
+	u32	lightMask;
 private:
 	u8 m_lockedRegs;
 };
@@ -44,6 +45,7 @@ class IMaterial
 {
 public:
 	virtual bool	usesAlpha	()=0;//This material uses alpha?
+	virtual bool	usesLight	()=0;//This material uses hardware lighting?
 	virtual void	setTev		(TTevInfo& info)=0;//Adjust texture enviroment hardware for render
 };
 
@@ -54,6 +56,7 @@ public:
 	TTexture					(const char * filename,const bool alpha = true);
 	~TTexture					();
 	virtual bool	usesAlpha	()								{ return m_alpha;		}
+	virtual bool	usesLight	()								{ return false;			}
 
 	GXTexObj	*	getTexture	()								{ return m_pGXTexture;	}
 protected:
@@ -90,8 +93,9 @@ protected:
 class TDiffuseMaterial : public IMaterial
 {
 public:
-	TDiffuseMaterial			( IMaterial * baseMaterial );
+	TDiffuseMaterial			( IMaterial * baseMaterial = NULL );
 	virtual bool	usesAlpha	()								{ return m_pBaseMaterial?m_pBaseMaterial->usesAlpha():false; }
+	virtual bool	usesLight	()								{ return true; }
 	IMaterial	*	m_pBaseMaterial;
 protected:
 	virtual void	setTev		(TTevInfo& info);

@@ -47,3 +47,17 @@ void DLIGHT::setDir(Vector dir)
 	Vector v = vector3(-dir.x, -dir.y, -dir.z);
 	setPos(v);
 }
+
+/*void DLIGHT::setLight(GXLightObj* _lObj, Mtx view)
+{
+	Vector lpos = getPos();
+	lpos.x*=1000000;
+	lpos.y*=1000000;
+	lpos.z*=1000000;
+	guVecMultiply(view, &lpos, &lpos);
+	
+	GX_InitLightPos(&_lObj,lpos.x,lpos.y,lpos.z);
+	GX_InitLightAttn(&_lObj, 1.0f,0.0f,0.0f,1.0f,0.0f,0.0f);
+	GX_InitLightSpot(&_lObj,0.0f,GX_SP_OFF);
+	GX_InitLightColor(&_lObj,clr);
+}*/

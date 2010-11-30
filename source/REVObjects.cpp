@@ -54,8 +54,8 @@ bool OBJECT::isRenderable()
 }
 
 //--------------------------------------------------------------
-void OBJECT::render()
+void OBJECT::render(u32 _lightMask)
 {
 	//Render my model using this material
-	m_model->render(m_vMaterials);
+	m_model->render(m_vMaterials, m_clr, _lightMask);
 }

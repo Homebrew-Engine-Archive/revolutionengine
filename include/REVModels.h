@@ -57,7 +57,7 @@ public:
 	void			scale		(f32 _factor);
 	void			scale		(const Vector& _factor);
 	
-	void			render		(std::vector<IMaterial*> materials);
+	void			render		(std::vector<IMaterial*> materials, GXColor& clr, u32 _lightMask);
 private:
 	std::vector<TMesh*> m_vMeshes;
 protected:

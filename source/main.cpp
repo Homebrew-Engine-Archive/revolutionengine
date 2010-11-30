@@ -13,53 +13,24 @@ int main()
 	REVConsole->open();
 	TModel * bigBall = loadRMD("RevExamples/models/sphere.rmd");
 	TModel * littleBall = loadRMD("RevExamples/models/sphere.rmd");
-	littleBall->scale(10);
+	bigBall->scale(10);
 	OBJECT * little = new OBJECT(littleBall, vector3(-8, 0, 0));
 	OBJECT * big = new OBJECT(bigBall, vector3(8, 0, 0));
 	TTexture * rocksTexture = new TTexture("RevExamples/maps/plasma.png", false);
-	little->setMaterial(rocksTexture);
-	//big->setMaterial(rocksTexture);
-	/*SMODEL * floorMd = new SMODEL("RevExamples/models/plane.rms");
-	floorMd->scale(100000);
-	SMODEL * ballMd = new SMODEL("RevExamples/models/cube.rms");
-	SMODEL * pointMd = new SMODEL("RevExamples/models/cube.rms");
-
-	TTexture * rocksTexture = new TTexture("RevExamples/maps/plasma.png", false);
-	
-	ballMd->scale(50);
-	//Objects
-	OBJECT * floor = new OBJECT(floorMd);
-	floor->setMaterial(rocksTexture);
-	floor->m_clr = SC_LBLUE;
-	OBJECT * ball01 = new OBJECT(ballMd, vector3(0, 0, 50));
-	OBJECT * ball02 = new OBJECT(ballMd, vector3(150, 0, 50));
-	OBJECT * ball03 = new OBJECT(pointMd, vector3(-150, 0, 50));
-	ball01->setMaterial(rocksTexture);
-	ball02->setMaterial(rocksTexture);
-	ball03->setMaterial(rocksTexture);
-	ball02->body = new SPHEREBD(50);
-	ball01->body = new SPHEREBD(50);
-	ball02->setSpeed(vector3(0, 100, -100), nullVector);
-	defaultCam->body = new SPHEREBD(50);
-	floor->body = new INFPLANEBD();
-	ball01->setSpeed(vector3(10,0,0), nullVector);*/
+	little->setMaterial(new TDiffuseMaterial());
+	big->setMaterial(new TDiffuseMaterial(rocksTexture));
 	defaultCam->rotate(AXIS_Z, 180);
 	defaultCam->move(vector3(0,50,5), RT_ABS);
 	//Sky box
 	/*mainRoot->skyBox.front = loadPng("RevExamples/maps/front-sunny.png");
 	mainRoot->skyBox.back = loadPng("RevExamples/maps/back-sunny.png");
 	mainRoot->skyBox.right = loadPng("RevExamples/maps/right-sunny.png");
-	mainRoot->skyBox.left = loadPng("RevExamples/maps/left-sunny.png");
+	mainRoot->skyBox.left = loadPng("RevExamples/maps/left-sunny.png");*/
 	
 	//Lights
 	DLIGHT(vector3(-1,-1,-1), SC_YELLOW);
 	DLIGHT(vector3(0,0,1), rgb(0,30,10));
 	DLIGHT(vector3(1,0,-1), SC_ORANGE);
-	f32 sx, sy, sz;
-	REVConsole->open();
-	REVConsole->write("program running");
-	REVConsole->write("program running");
-	REVConsole->write("program running");*/
 	//Main Loop
 	while(1)
 	{
@@ -73,29 +44,20 @@ int main()
 		//ball->log();
 		if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_B)
 		{
-			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_RIGHT) defaultCam->move(vector3(500*gameTime,0,0),RT_SELF);
-			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_LEFT) defaultCam->move(vector3(-500*gameTime,0,0),RT_SELF);
-			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_UP) defaultCam->move(vector3(0,0,500*gameTime),RT_SELF);
-			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_DOWN) defaultCam->move(vector3(0,0,-500*gameTime),RT_SELF);
+			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_RIGHT) defaultCam->move(vector3(50*gameTime,0,0),RT_SELF);
+			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_LEFT) defaultCam->move(vector3(-50*gameTime,0,0),RT_SELF);
+			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_UP) defaultCam->move(vector3(0,0,50*gameTime),RT_SELF);
+			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_DOWN) defaultCam->move(vector3(0,0,-50*gameTime),RT_SELF);
 		}
 		else
 		{
 			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_RIGHT) defaultCam->rotate(AXIS_Z, -45*gameTime);
 			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_LEFT) defaultCam->rotate(AXIS_Z, 45*gameTime);
-			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_UP) defaultCam->move(vector3(0,500*gameTime,0),RT_SELF);
-			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_DOWN) defaultCam->move(vector3(0,-100*gameTime,0),RT_SELF);
+			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_UP) defaultCam->move(vector3(0,50*gameTime,0),RT_SELF);
+			if(WPAD_ButtonsHeld(0) & WPAD_BUTTON_DOWN) defaultCam->move(vector3(0,-10*gameTime,0),RT_SELF);
 		}
 		//Updates
-		/*if(keyState[KEY_H]) screenShot("SunnyDay.png");
-		sx = sy = sz = 0;
-		if(keyState[KEY_W]) sz+=100;
-		if(keyState[KEY_S]) sz-=100;
-		if(keyState[KEY_A]) sx+=100;
-		if(keyState[KEY_D]) sx-=100;
-		ball01->setSpeed(vector3(sx,sy,sz),nullVector);
-		if((ball01->collide(floor) >= 0)||(ball01->collide(ball02) >= 0)||(ball01->collide(ball03) >= 0))
-			ball01->m_clr = SC_RED;
-		else ball01->m_clr = SC_WHITE;*/
+		if(WPAD_ButtonsDown(0) & WPAD_BUTTON_2) screenShot("REV-0.6_HW-Lighting.png");
 		//After every frame
 		REV_process(NULL);//
 	}
