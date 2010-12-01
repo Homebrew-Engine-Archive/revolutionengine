@@ -40,6 +40,6 @@ LIGHT::~LIGHT()
 
 void DLIGHT::setDir(Vector dir)
 {
-	Vector v = vector3(-dir.x, -dir.y, -dir.z);
+	Vector v = vector3(-dir.x*1000000, -dir.y*1000000, -dir.z*1000000);
 	setPos(v);
 }

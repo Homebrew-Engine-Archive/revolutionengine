@@ -364,9 +364,6 @@ void render(NODE * node, Vector camPos)
 		for(u8 i = 0;light != mainRoot->getLights().end(); ++light, ++i)
 		{
 			Vector lpos = (*light)->getPos();
-			lpos.x*=1000000;
-			lpos.y*=1000000;
-			lpos.z*=1000000;
 			guVecMultiply(view, &lpos, &lpos);
 			
 			GX_InitLightPos(&lObj[i],lpos.x,lpos.y,lpos.z);
