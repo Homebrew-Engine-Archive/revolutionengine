@@ -22,7 +22,6 @@ public:
 	LIGHT(GXColor clr = SC_WHITE, u8 flags = F_Active);
 	~LIGHT();
 	GXColor clr;
-	//virtual void setLight(GXLightObj* lObj, Mtx view)=0;
 private:
 	LIGHT * nextL;
 protected:
@@ -34,7 +33,6 @@ class DLIGHT: public LIGHT//Directional Light
 public:
 	DLIGHT(Vector direction = vector3(0,0,-1), GXColor clr = SC_WHITE, u8 flags = F_Active);
 	void setDir(Vector dir);
-	//virtual void setLight(GXLightObj* lObj, Mtx view);
 };
 
 //Global data

@@ -7,6 +7,7 @@
 #define REV_MAIN_H
 
 #include <map>
+#include <vector>
 
 #include "REVExternal.h"
 
@@ -47,14 +48,14 @@ public:
 	ROOT();
 	void init(f32 w, f32 h);
 	void enableShadows(LIGHT * l, SDW_PARAMS shadow);
-	LIGHT * getFirstLight() { return fstLight; }
+	std::vector<LIGHT*>& getLights() { return m_vLights; }
 	u8 shadowsEnabled();
 private:
 	std::multimap<CAMERA*, TRender2Texture*> m_Render2Textures;
 	PANEL * fstView;
 	NODE * rootNode;
 	N2D * rootN2D;
-	LIGHT * fstLight;
+	std::vector<LIGHT*> m_vLights;
 	HTCAMERA * fstHTC;
 	BUTTON * fstBtn;
 	LIGHT * shadowCaster;

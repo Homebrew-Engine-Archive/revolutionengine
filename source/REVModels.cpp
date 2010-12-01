@@ -293,6 +293,7 @@ void TModel::render(std::vector<IMaterial*> _materials, GXColor& _clr, u32 _ligh
 	s32 lastSlot = -1;
 	std::vector<TMesh*>::iterator iter = m_vMeshes.begin();
 	TTevInfo renderInfo;
+	renderInfo.lightMask = _lightMask;
 	for(; iter != m_vMeshes.end(); ++iter)
 	{
 		if((*iter)->getSlot() != lastSlot)

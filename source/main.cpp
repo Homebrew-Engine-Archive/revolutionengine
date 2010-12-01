@@ -28,9 +28,9 @@ int main()
 	mainRoot->skyBox.left = loadPng("RevExamples/maps/left-sunny.png");*/
 	
 	//Lights
-	DLIGHT(vector3(-1,-1,-1), SC_YELLOW);
-	DLIGHT(vector3(0,0,1), rgb(0,30,10));
-	DLIGHT(vector3(1,0,-1), SC_ORANGE);
+	DLIGHT * lit01 = new DLIGHT(vector3(-1,-1,-1), SC_YELLOW);
+	DLIGHT * lit02 = new DLIGHT(vector3(0,0,1), rgb(0,30,10));
+	DLIGHT * lit03 = new DLIGHT(vector3(1,0,-1), SC_ORANGE);
 	//Main Loop
 	while(1)
 	{

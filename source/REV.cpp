@@ -211,7 +211,7 @@ ROOT::ROOT()
 	rootNode = NULL;
 	rootN2D = NULL;
 	fstView = NULL;
-	fstLight = NULL;
+	m_vLights.reserve(8);
 	fstHTC = NULL;
 	fstBtn = NULL;
 	shadowCaster = NULL;
@@ -356,24 +356,29 @@ void render(NODE * node, Vector camPos)
 		GX_LoadNrmMtxImm(inv, GX_PNMTX0);//Load normal matrix
 
 		//TODO: Better lighting (multiple lights)
-		LIGHT * l = mainRoot->getFirstLight();
-		GXLightObj lObj;
-		if(l)
+		std::vector<LIGHT*>::iterator light = mainRoot->getLights().begin();
+		//if(light == mainRoot->getLights().end())
+		//	REVConsole->write("LIGHT");
+		GXLightObj lObj[8];
+		u8 lightMask = 0, tmpLight = GX_LIGHT0;
+		for(u8 i = 0;light != mainRoot->getLights().end(); ++light, ++i)
 		{
-			Vector lpos = l->getPos();
+			Vector lpos = (*light)->getPos();
 			lpos.x*=1000000;
 			lpos.y*=1000000;
 			lpos.z*=1000000;
 			guVecMultiply(view, &lpos, &lpos);
 			
-			GX_InitLightPos(&lObj,lpos.x,lpos.y,lpos.z);
-			GX_InitLightAttn(&lObj, 1.0f,0.0f,0.0f,1.0f,0.0f,0.0f);
-			GX_InitLightSpot(&lObj,0.0f,GX_SP_OFF);
-			GX_InitLightColor(&lObj,SC_WHITE);
-			GX_LoadLightObj(&lObj,GX_LIGHT0);
+			GX_InitLightPos(&lObj[i],lpos.x,lpos.y,lpos.z);
+			GX_InitLightAttn(&lObj[i], 1.0f,0.0f,0.0f,1.0f,0.0f,0.0f);
+			GX_InitLightSpot(&lObj[i],0.0f,GX_SP_OFF);
+			GX_InitLightColor(&lObj[i],(*light)->clr);
+			GX_LoadLightObj(&lObj[i],tmpLight);
+			lightMask |= tmpLight;
+			tmpLight *= 2;
 		}
 		//Render the node
-		node->render(GX_LIGHT0);
+		node->render(lightMask);
 	}
 }
 

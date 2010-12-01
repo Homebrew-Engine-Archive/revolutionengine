@@ -11,10 +11,10 @@ GXColor ambientLight = DEFAULT_AMBIENT_LIGHT;
 
 LIGHT::LIGHT(GXColor clr, u8 flags)
 {
-	nextL = mainRoot->fstLight;
-	mainRoot->fstLight = this;
+	mainRoot->getLights().push_back(this);
 	this->flags = flags;
 	this->clr = clr;
+	char msg[16];
 }
 
 DLIGHT::DLIGHT(Vector v, GXColor clr, u8 flags)
@@ -27,17 +27,13 @@ DLIGHT::DLIGHT(Vector v, GXColor clr, u8 flags)
 
 LIGHT::~LIGHT()
 {
-	LIGHT * aux = mainRoot->fstLight;
-	if(aux == this)
+	std::vector<LIGHT*>::iterator iter = mainRoot->m_vLights.begin();
+	for(;iter != mainRoot->getLights().end(); ++iter)
 	{
-		aux = nextL;
-		return;
-	}
-	while(aux)
-	{
-		if(aux->nextL == this)
+		if((*iter) == this)
 		{
-			aux->nextL = nextL;
+			mainRoot->m_vLights.erase(iter);
+			break;
 		}
 	}
 }
@@ -47,17 +43,3 @@ void DLIGHT::setDir(Vector dir)
 	Vector v = vector3(-dir.x, -dir.y, -dir.z);
 	setPos(v);
 }
-
-/*void DLIGHT::setLight(GXLightObj* _lObj, Mtx view)
-{
-	Vector lpos = getPos();
-	lpos.x*=1000000;
-	lpos.y*=1000000;
-	lpos.z*=1000000;
-	guVecMultiply(view, &lpos, &lpos);
-	
-	GX_InitLightPos(&_lObj,lpos.x,lpos.y,lpos.z);
-	GX_InitLightAttn(&_lObj, 1.0f,0.0f,0.0f,1.0f,0.0f,0.0f);
-	GX_InitLightSpot(&_lObj,0.0f,GX_SP_OFF);
-	GX_InitLightColor(&_lObj,clr);
-}*/
